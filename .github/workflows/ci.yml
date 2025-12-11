@@ -74,7 +74,7 @@ jobs:
 
       - name: Upload Java build artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: java-build-artifacts
           path: services/java/*/target/
@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload Node.js build artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nodejs-build-artifacts
           path: services/nodejs/*/dist/
@@ -169,7 +169,7 @@ jobs:
 
       - name: Upload coverage reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: java-coverage-reports
           path: services/java/*/target/site/jacoco/
@@ -205,7 +205,7 @@ jobs:
 
       - name: Upload coverage reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nodejs-coverage-reports
           path: coverage/
