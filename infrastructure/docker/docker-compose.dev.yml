@@ -1,0 +1,300 @@
+version: '3.9'
+
+services:
+  # ============================================================================
+  # Databases
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: ehealth-postgres
+    environment:
+      POSTGRES_USER: ehealth
+      POSTGRES_PASSWORD: ehealth_dev_password
+      POSTGRES_DB: ehealth_dev
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ehealth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  mongodb:
+    image: mongo:7.0-alpine
+    container_name: ehealth-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ehealth
+      MONGO_INITDB_ROOT_PASSWORD: ehealth_dev_password
+      MONGO_INITDB_DATABASE: ehealth_dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Message Brokers - Artemis (Transactions Critiques)
+  # ============================================================================
+  artemis:
+    image: quay.io/artemiscloud/activemq-artemis:latest
+    container_name: ehealth-artemis
+    environment:
+      ARTEMIS_USER: ehealth
+      ARTEMIS_PASSWORD: ehealth_dev_password
+      ARTEMIS_MIN_MEMORY: 256M
+      ARTEMIS_MAX_MEMORY: 512M
+    ports:
+      - "61616:61616"  # OpenWire protocol (Java clients)
+      - "5672:5672"    # AMQP protocol
+      - "61613:61613"  # STOMP protocol
+      - "8161:8161"    # Management UI (http://localhost:8161)
+    volumes:
+      - artemis_data:/var/lib/artemis-instance
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8161/admin/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Message Brokers - Kafka (Audit Trail & Replay)
+  # ============================================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ehealth-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 5
+      ZOOKEEPER_INIT_LIMIT: 10
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ehealth-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 720  # 30 jours pour audit trail
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824  # 1GB segments
+      KAFKA_COMPRESSION_TYPE: snappy
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions.sh", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: ehealth-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: ehealth
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "8080:8080"
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Cache
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ehealth-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Mail Server (for testing)
+  # ============================================================================
+  maildev:
+    image: maildev/maildev:latest
+    container_name: ehealth-maildev
+    ports:
+      - "1080:1080"  # Web UI
+      - "1025:1025"  # SMTP
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Monitoring & Logging
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ehealth-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - ehealth-network
+    depends_on:
+      - artemis
+      - kafka
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ehealth-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - ehealth-network
+    depends_on:
+      - prometheus
+
+  # ============================================================================
+  # Logging - ELK Stack
+  # ============================================================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: ehealth-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.0
+    container_name: ehealth-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - ehealth-network
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: ehealth-logstash
+    ports:
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+    environment:
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - ehealth-network
+    depends_on:
+      - elasticsearch
+
+  # ============================================================================
+  # Schema Registry (pour Kafka - Optionnel mais recommandé)
+  # ============================================================================
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    container_name: ehealth-schema-registry
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_DEBUG: "true"
+    ports:
+      - "8081:8081"
+    networks:
+      - ehealth-network
+
+volumes:
+  postgres_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  artemis_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  zookeeper_data:
+    driver: local
+  zookeeper_logs:
+    driver: local
+  kafka_data:
+    driver: local
+
+networks:
+  ehealth-network:
+    driver: bridge

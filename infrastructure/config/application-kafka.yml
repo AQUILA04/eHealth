@@ -1,0 +1,99 @@
+# Configuration Kafka pour Spring Boot
+# À inclure dans chaque service Java avec: spring.profiles.active=kafka
+
+spring:
+  kafka:
+    # Bootstrap servers
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    
+    # Producer configuration
+    producer:
+      # Sérialisation
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      
+      # Garantie de livraison
+      acks: all  # Tous les replicas doivent acquitter
+      retries: 3
+      
+      # Compression
+      compression-type: snappy
+      
+      # Batching
+      batch-size: 16384
+      linger-ms: 10
+      
+      # Timeout
+      request-timeout-ms: 30000
+      
+      # Propriétés additionnelles
+      properties:
+        max.in.flight.requests.per.connection: 1  # Ordre garanti
+        enable.idempotence: true
+    
+    # Consumer configuration
+    consumer:
+      # Sérialisation
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      
+      # Group ID
+      group-id: ${KAFKA_CONSUMER_GROUP:ehealth-consumer-group}
+      
+      # Offset reset
+      auto-offset-reset: earliest  # Replay depuis le début
+      
+      # Auto-commit
+      enable-auto-commit: false  # Manuel pour contrôler les offsets
+      auto-commit-interval-ms: 1000
+      
+      # Session timeout
+      session-timeout-ms: 30000
+      
+      # Heartbeat
+      heartbeat-interval-ms: 10000
+      
+      # Propriétés additionnelles
+      properties:
+        isolation.level: read_committed
+        max.poll.records: 500
+    
+    # Admin configuration
+    admin:
+      properties:
+        bootstrap.servers: ${spring.kafka.bootstrap-servers}
+    
+    # Listener configuration
+    listener:
+      # Type de ack
+      ack-mode: manual
+      
+      # Concurrence
+      concurrency: 3
+      
+      # Poll timeout
+      poll-timeout: 3000
+      
+      # Type de listener
+      type: batch
+
+# Logging
+logging:
+  level:
+    org.apache.kafka: INFO
+    org.springframework.kafka: DEBUG
+    com.sih: DEBUG
+
+# Actuator pour monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  endpoint:
+    health:
+      show-details: always

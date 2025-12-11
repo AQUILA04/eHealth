@@ -1,0 +1,56 @@
+# Build stage
+FROM node:20-alpine AS builder
+
+WORKDIR /build
+
+# Install pnpm
+RUN npm install -g pnpm@8
+
+# Copy package files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY services/nodejs/*/package.json ./services/nodejs/
+COPY services/frontend/package.json ./services/frontend/
+COPY shared/types-ts/package.json ./shared/types-ts/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY services/nodejs ./services/nodejs
+COPY services/frontend ./services/frontend
+COPY shared/types-ts ./shared/types-ts
+
+# Build application
+RUN pnpm build
+
+# Runtime stage
+FROM node:20-alpine
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init curl
+
+# Create non-root user
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+WORKDIR /app
+
+# Copy built application
+ARG SERVICE_NAME
+COPY --from=builder /build/services/nodejs/${SERVICE_NAME}/dist ./dist
+COPY --from=builder /build/services/nodejs/${SERVICE_NAME}/node_modules ./node_modules
+COPY --from=builder /build/services/nodejs/${SERVICE_NAME}/package.json .
+
+# Change ownership
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+EXPOSE 3000
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/main.js"]

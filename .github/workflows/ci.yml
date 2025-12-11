@@ -1,0 +1,326 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/**
+      - bugfix/**
+      - release/**
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release/**
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ============================================================================
+  # JOB 1: Lint and Format Check
+  # ============================================================================
+  lint-and-format:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint
+        continue-on-error: true
+
+      - name: Check formatting
+        run: pnpm format:check
+        continue-on-error: true
+
+  # ============================================================================
+  # JOB 2: Build Java Services
+  # ============================================================================
+  build-java:
+    name: Build Java Services
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+        continue-on-error: false
+
+      - name: Upload Java build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-build-artifacts
+          path: services/java/*/target/
+          retention-days: 1
+
+  # ============================================================================
+  # JOB 3: Build Node.js Services
+  # ============================================================================
+  build-nodejs:
+    name: Build Node.js Services
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Node.js services
+        run: pnpm build
+        continue-on-error: false
+
+      - name: Upload Node.js build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodejs-build-artifacts
+          path: services/nodejs/*/dist/
+          retention-days: 1
+
+  # ============================================================================
+  # JOB 4: Test Java Services
+  # ============================================================================
+  test-java:
+    name: Test Java Services
+    runs-on: ubuntu-latest
+    needs: build-java
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ehealth_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      mongodb:
+        image: mongo:7-alpine
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Java tests
+        run: mvn test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ehealth_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+          SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/ehealth_test
+        continue-on-error: false
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-coverage-reports
+          path: services/java/*/target/site/jacoco/
+          retention-days: 7
+
+  # ============================================================================
+  # JOB 5: Test Node.js Services
+  # ============================================================================
+  test-nodejs:
+    name: Test Node.js Services
+    runs-on: ubuntu-latest
+    needs: build-nodejs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run Node.js tests
+        run: pnpm test
+        continue-on-error: false
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodejs-coverage-reports
+          path: coverage/
+          retention-days: 7
+
+  # ============================================================================
+  # JOB 6: Security Scan
+  # ============================================================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [build-java, build-nodejs]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ============================================================================
+  # JOB 7: Build Docker Images
+  # ============================================================================
+  build-docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-java, test-nodejs, security-scan]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for EMPI Service
+        id: meta-empi
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/empi-service
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Build and push EMPI Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/java/empi-service
+          file: ./services/java/empi-service/Dockerfile
+          push: true
+          tags: ${{ steps.meta-empi.outputs.tags }}
+          labels: ${{ steps.meta-empi.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract metadata for API Gateway
+        id: meta-gateway
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Build and push API Gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/nodejs/api-gateway
+          file: ./services/nodejs/api-gateway/Dockerfile
+          push: true
+          tags: ${{ steps.meta-gateway.outputs.tags }}
+          labels: ${{ steps.meta-gateway.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================================
+  # JOB 8: Status Check
+  # ============================================================================
+  status-check:
+    name: Status Check
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, build-java, build-nodejs, test-java, test-nodejs, security-scan]
+    if: always()
+    steps:
+      - name: Check build status
+        run: |
+          if [ "${{ needs.lint-and-format.result }}" == "failure" ] || \
+             [ "${{ needs.build-java.result }}" == "failure" ] || \
+             [ "${{ needs.build-nodejs.result }}" == "failure" ] || \
+             [ "${{ needs.test-java.result }}" == "failure" ] || \
+             [ "${{ needs.test-nodejs.result }}" == "failure" ]; then
+            echo "❌ Pipeline failed"
+            exit 1
+          fi
+          echo "✅ Pipeline succeeded"
