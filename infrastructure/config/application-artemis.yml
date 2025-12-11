@@ -1,0 +1,64 @@
+# Configuration Artemis pour Spring Boot
+# À inclure dans chaque service Java avec: spring.profiles.active=artemis
+
+spring:
+  artemis:
+    # Connexion au broker Artemis
+    host: ${ARTEMIS_HOST:localhost}
+    port: ${ARTEMIS_PORT:61616}
+    user: ${ARTEMIS_USER:ehealth}
+    password: ${ARTEMIS_PASSWORD:ehealth_dev_password}
+    
+    # Mode embedded (optionnel pour tests)
+    embedded:
+      enabled: false
+    
+    # Configuration du pool de connexions
+    pool:
+      enabled: true
+      max-connections: 10
+      idle-timeout: 30000
+      max-idle-time: 60000
+  
+  jms:
+    # Configuration JMS
+    listener:
+      # Nombre de threads pour écouter les messages
+      concurrency: 3-10
+      # Timeout pour recevoir les messages
+      poll-timeout: 5000
+      # Ack mode: AUTO, CLIENT, DUPS_OK
+      acknowledge-mode: auto
+      # Nombre de tentatives avant DLQ
+      max-concurrency: 10
+    
+    # Configuration du template
+    template:
+      # Timeout pour envoyer les messages
+      send-timeout: 5000
+      # Reçoit les réponses
+      receive-timeout: 5000
+      # Transactions activées
+      default-destination: null
+
+# Logging
+logging:
+  level:
+    org.apache.activemq: INFO
+    org.apache.activemq.artemis: INFO
+    org.springframework.jms: DEBUG
+    com.sih: DEBUG
+
+# Actuator pour monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  endpoint:
+    health:
+      show-details: always
