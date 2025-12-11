@@ -1,5 +1,5 @@
 packages:
-  - 'packages/*'
-  - 'packages/shared/*'
-  - 'packages/hub/*'
-  - 'packages/spoke/*'
+  - 'services/java/*'
+  - 'services/nodejs/*'
+  - 'services/frontend'
+  - 'shared/*'

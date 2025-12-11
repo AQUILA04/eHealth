@@ -42,6 +42,9 @@
     "typescript": "^5.2.2"
   },
   "workspaces": [
-    "packages/*"
+    "services/java/*",
+    "services/nodejs/*",
+    "services/frontend",
+    "shared/*"
   ]
 }
