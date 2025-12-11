@@ -1,0 +1,202 @@
+version: '3.9'
+
+services:
+  # ============================================================================
+  # Databases
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: ehealth-postgres
+    environment:
+      POSTGRES_USER: ehealth
+      POSTGRES_PASSWORD: ehealth_dev_password
+      POSTGRES_DB: ehealth_dev
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ehealth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  mongodb:
+    image: mongo:7-alpine
+    container_name: ehealth-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ehealth
+      MONGO_INITDB_ROOT_PASSWORD: ehealth_dev_password
+      MONGO_INITDB_DATABASE: ehealth_dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Message Broker
+  # ============================================================================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: ehealth-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ehealth
+      RABBITMQ_DEFAULT_PASS: ehealth_dev_password
+      RABBITMQ_DEFAULT_VHOST: /ehealth
+    ports:
+      - "5672:5672"      # AMQP port
+      - "15672:15672"    # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Cache
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ehealth-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Mail Server (for testing)
+  # ============================================================================
+  maildev:
+    image: maildev/maildev:latest
+    container_name: ehealth-maildev
+    ports:
+      - "1080:1080"  # Web UI
+      - "1025:1025"  # SMTP
+    networks:
+      - ehealth-network
+
+  # ============================================================================
+  # Monitoring & Logging
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ehealth-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - ehealth-network
+    depends_on:
+      - postgres
+      - mongodb
+      - rabbitmq
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ehealth-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - ehealth-network
+    depends_on:
+      - prometheus
+
+  # ============================================================================
+  # Logging
+  # ============================================================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: ehealth-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehealth-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.0
+    container_name: ehealth-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - ehealth-network
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: ehealth-logstash
+    ports:
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+    environment:
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - ehealth-network
+    depends_on:
+      - elasticsearch
+
+volumes:
+  postgres_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  ehealth-network:
+    driver: bridge
