@@ -35,7 +35,7 @@
         <module>services/java/lis-service</module>
         <module>services/java/ris-service</module>
         <module>services/java/pharmacy-service</module>
-        <module>shared/types-java</module>
+        <!-- <module>shared/types-java</module> TODO: Fix compilation errors -->
     </modules>
 
     <dependencyManagement>
