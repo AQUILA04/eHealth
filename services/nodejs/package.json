@@ -1,0 +1,14 @@
+{
+  "name": "ehealth-nodejs-services",
+  "version": "0.1.0",
+  "description": "Node.js services for eHealth system",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm run dev --recursive",
+    "build": "pnpm run build --recursive",
+    "test": "pnpm run test --recursive",
+    "lint": "pnpm run lint --recursive",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json}\""
+  }
+}
