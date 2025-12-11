@@ -9,7 +9,6 @@
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "install": "pnpm install",
     "dev": "pnpm run dev --recursive",
     "build": "pnpm run build --recursive",
     "test": "pnpm run test --recursive",
