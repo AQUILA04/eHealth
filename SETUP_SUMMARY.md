@@ -15,16 +15,19 @@ Le projet eHealth a été configuré comme un **monorepo polyglotte professionne
 ## 🎯 Objectifs réalisés
 
 ### Phase 1: Analyse ✅
+
 - Clonage du repository GitHub
 - Analyse de la documentation existante (architecture, spécifications)
 - Compréhension de l'architecture Hub-and-Spoke
 
 ### Phase 2: Conception ✅
+
 - Conception de l'architecture polyglotte
 - Planification de la structure du monorepo
 - Documentation dans MONOREPO_ARCHITECTURE.md
 
 ### Phase 3: Configuration ✅
+
 - Création de la structure complète des répertoires
 - Configuration Maven parent (pom.xml)
 - Configuration pnpm workspaces
@@ -32,6 +35,7 @@ Le projet eHealth a été configuré comme un **monorepo polyglotte professionne
 - Création des scripts de setup, build, test
 
 ### Phase 4: Pipeline CI/CD ✅
+
 - Pipeline GitHub Actions complet
 - Build Java et Node.js parallélisés
 - Tests unitaires et d'intégration
@@ -41,16 +45,19 @@ Le projet eHealth a été configuré comme un **monorepo polyglotte professionne
 - Dockerfiles optimisés
 
 ### Phase 5: Gitflow ✅
+
 - Initialisation des branches (main, develop, feature/setup)
 - Commits initiaux avec la structure complète
 - Prêt pour les pull requests
 
 ### Phase 6: Vérification ✅
+
 - Création de tous les pom.xml pour services Java
 - Création de tous les package.json pour services Node.js
 - Vérification de la structure complète
 
 ### Phase 7: Documentation ✅
+
 - README complet avec guide d'installation
 - CONTRIBUTING.md avec guide de contribution
 - CHANGELOG.md avec historique
@@ -113,6 +120,7 @@ eHealth/
 ## 🛠️ Technologies configurées
 
 ### Backend Java
+
 - **Spring Boot 3.1.5** - Framework web
 - **Spring Cloud 2022.0.4** - Microservices
 - **HAPI FHIR 6.8.0** - Standard FHIR R4/R5
@@ -122,6 +130,7 @@ eHealth/
 - **Maven 3.9+** - Build tool
 
 ### Backend Node.js
+
 - **NestJS 10.2.1** - Framework
 - **TypeScript 5.2.2** - Langage
 - **Node.js 20.x LTS** - Runtime
@@ -129,6 +138,7 @@ eHealth/
 - **Jest 29.7.0** - Testing
 
 ### Frontend
+
 - **React 18.2.0** - UI framework
 - **Vite 5.0.0** - Build tool
 - **TypeScript 5.2.2** - Langage
@@ -136,6 +146,7 @@ eHealth/
 - **Zustand 4.4.1** - State management
 
 ### Infrastructure
+
 - **Docker 24.x** - Conteneurisation
 - **Kubernetes 1.28.x** - Orchestration
 - **RabbitMQ 3.12** - Message broker
@@ -148,29 +159,32 @@ eHealth/
 
 ## 📊 Statistiques
 
-| Catégorie | Nombre |
-|-----------|--------|
-| Services Java | 9 |
-| Services Node.js | 4 |
-| Applications Frontend | 1 |
-| Modules partagés | 3 |
-| Fichiers créés | 49 |
-| Fichiers de configuration | 8 |
-| Fichiers de documentation | 5 |
-| Scripts d'automatisation | 6 |
+| Catégorie                 | Nombre |
+| ------------------------- | ------ |
+| Services Java             | 9      |
+| Services Node.js          | 4      |
+| Applications Frontend     | 1      |
+| Modules partagés          | 3      |
+| Fichiers créés            | 49     |
+| Fichiers de configuration | 8      |
+| Fichiers de documentation | 5      |
+| Scripts d'automatisation  | 6      |
 
 ---
 
 ## 🚀 Prochaines étapes
 
 ### Immédiat
+
 1. **Installer les dépendances:**
+
    ```bash
    pnpm install
    mvn clean install -DskipTests
    ```
 
 2. **Démarrer l'infrastructure:**
+
    ```bash
    pnpm docker:up
    ```
@@ -182,18 +196,21 @@ eHealth/
    ```
 
 ### Court terme (1-2 semaines)
+
 1. Implémenter les services fondamentaux (EMPI, GAP, DPI)
 2. Configurer la communication gRPC entre services
 3. Mettre en place le bus d'événements RabbitMQ
 4. Développer l'API Gateway
 
 ### Moyen terme (1-2 mois)
+
 1. Implémenter les services secondaires (CPOE, LIS, RIS, Pharmacy)
 2. Développer le frontend React
 3. Intégrer FHIR R4/R5 complètement
 4. Mettre en place les tests E2E
 
 ### Long terme (3-6 mois)
+
 1. Déploiement Kubernetes
 2. Configuration Terraform
 3. Monitoring et alerting complets
@@ -204,20 +221,21 @@ eHealth/
 
 ## 📚 Documentation disponible
 
-| Document | Description |
-|----------|-------------|
-| [README.md](./README.md) | Guide d'installation et utilisation |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Guide de contribution |
-| [CHANGELOG.md](./CHANGELOG.md) | Historique des versions |
-| [MONOREPO_ARCHITECTURE.md](./MONOREPO_ARCHITECTURE.md) | Architecture technique détaillée |
-| [docs/architecture.md](./docs/architecture.md) | Architecture Hub-and-Spoke |
-| [docs/SIH _ Fonctionnalités Détaillées Par Module.md](./docs/SIH%20_%20Fonctionnalités%20Détaillées%20Par%20Module.md) | Spécifications fonctionnelles |
+| Document                                                                                                                | Description                         |
+| ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| [README.md](./README.md)                                                                                                | Guide d'installation et utilisation |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)                                                                                    | Guide de contribution               |
+| [CHANGELOG.md](./CHANGELOG.md)                                                                                          | Historique des versions             |
+| [MONOREPO_ARCHITECTURE.md](./MONOREPO_ARCHITECTURE.md)                                                                  | Architecture technique détaillée    |
+| [docs/architecture.md](./docs/architecture.md)                                                                          | Architecture Hub-and-Spoke          |
+| [docs/SIH \_ Fonctionnalités Détaillées Par Module.md](./docs/SIH%20_%20Fonctionnalités%20Détaillées%20Par%20Module.md) | Spécifications fonctionnelles       |
 
 ---
 
 ## 🔧 Commandes essentielles
 
 ### Setup
+
 ```bash
 # Linux/macOS
 ./infrastructure/scripts/setup.sh
@@ -227,6 +245,7 @@ infrastructure\scripts\setup.bat
 ```
 
 ### Développement
+
 ```bash
 # Démarrer tous les services
 pnpm dev
@@ -237,6 +256,7 @@ cd services/nodejs/api-gateway && pnpm dev
 ```
 
 ### Build
+
 ```bash
 # Linux/macOS
 ./infrastructure/scripts/build.sh
@@ -246,6 +266,7 @@ infrastructure\scripts\build.bat
 ```
 
 ### Tests
+
 ```bash
 # Linux/macOS
 ./infrastructure/scripts/test.sh
@@ -255,6 +276,7 @@ infrastructure\scripts\test.bat
 ```
 
 ### Infrastructure
+
 ```bash
 # Démarrer Docker Compose
 pnpm docker:up
@@ -289,30 +311,35 @@ pnpm docker:logs
 ## 🎓 Bonnes pratiques implémentées
 
 ### Architecture
+
 - ✅ Isolation des services (chaque service a sa propre DB)
 - ✅ Communication par gRPC (interne) et REST/FHIR (externe)
 - ✅ Event-driven architecture avec RabbitMQ
 - ✅ Monorepo polyglotte optimisé
 
 ### Code Quality
+
 - ✅ Linting et formatting automatisés
 - ✅ Conventions de nommage standardisées
 - ✅ Configuration TypeScript stricte
 - ✅ EditorConfig pour cohérence IDE
 
 ### CI/CD
+
 - ✅ Pipeline multi-étapes
 - ✅ Tests parallélisés
 - ✅ Security scan automatisé
 - ✅ Build Docker automatisé
 
 ### Git & Workflow
+
 - ✅ Gitflow avec branches protégées
 - ✅ Conventional Commits
 - ✅ Template de pull request
 - ✅ Guide de contribution
 
 ### Documentation
+
 - ✅ README complet
 - ✅ Architecture documentée
 - ✅ Guide de contribution
@@ -334,6 +361,7 @@ pnpm docker:logs
 ## 📞 Support et questions
 
 Pour toute question ou problème:
+
 - **Issues:** https://github.com/AQUILA04/eHealth/issues
 - **Discussions:** https://github.com/AQUILA04/eHealth/discussions
 - **Documentation:** Voir les fichiers .md dans le repository
@@ -356,4 +384,4 @@ Prochaine étape: Commencer l'implémentation des services fondamentaux (EMPI, G
 
 **Setup complété avec succès! 🎉**
 
-*Dernière mise à jour: 2025-12-11*
+_Dernière mise à jour: 2025-12-11_

@@ -9,24 +9,27 @@
 ## 🔴 Erreur 1: pnpm not found in GitHub Actions
 
 ### ❌ Problème
+
 ```
-Error: Unable to locate executable file: pnpm. Please verify either the file path 
-exists or the file can be found within a directory specified by the PATH environment 
+Error: Unable to locate executable file: pnpm. Please verify either the file path
+exists or the file can be found within a directory specified by the PATH environment
 variable. Also check the file mode to verify the file is executable.
 ```
 
 ### 🔍 Cause
+
 L'ordre des étapes dans GitHub Actions est incorrect. `setup-node` doit être appelé **APRÈS** `pnpm/action-setup`, sinon pnpm n'est pas disponible dans le PATH.
 
 ### ✅ Solution
 
 **MAUVAIS ordre:**
+
 ```yaml
 - name: Setup Node.js
   uses: actions/setup-node@v4
   with:
     node-version: '20'
-    cache: 'pnpm'  # ❌ pnpm n'existe pas encore!
+    cache: 'pnpm' # ❌ pnpm n'existe pas encore!
 
 - name: Install pnpm
   uses: pnpm/action-setup@v2
@@ -35,6 +38,7 @@ L'ordre des étapes dans GitHub Actions est incorrect. `setup-node` doit être a
 ```
 
 **BON ordre:**
+
 ```yaml
 - name: Install pnpm
   uses: pnpm/action-setup@v2
@@ -45,10 +49,11 @@ L'ordre des étapes dans GitHub Actions est incorrect. `setup-node` doit être a
   uses: actions/setup-node@v4
   with:
     node-version: '20'
-    cache: 'pnpm'  # ✅ pnpm existe maintenant
+    cache: 'pnpm' # ✅ pnpm existe maintenant
 ```
 
 ### 🔧 Configuration complète
+
 ```yaml
 steps:
   - name: Checkout code
@@ -73,6 +78,7 @@ steps:
 ```
 
 ### 📝 Notes importantes
+
 - **Toujours installer pnpm AVANT setup-node**
 - Utiliser `--no-frozen-lockfile` en CI si `pnpm-lock.yaml` n'existe pas
 - Utiliser `--frozen-lockfile` en production (lockfile doit exister)
@@ -82,22 +88,26 @@ steps:
 ## 🔴 Erreur 2: pnpm-lock.yaml not found
 
 ### ❌ Problème
+
 ```
 Error: ENOENT: no such file or directory, open '/home/ubuntu/eHealth/pnpm-lock.yaml'
 ```
 
 ### 🔍 Cause
+
 Le fichier `pnpm-lock.yaml` n'existe pas dans le repository. Par défaut, pnpm en CI utilise `--frozen-lockfile` qui échoue si le lockfile n'existe pas.
 
 ### ✅ Solutions
 
 **Option 1: Utiliser `--no-frozen-lockfile` en CI** (Recommandé pour MVP)
+
 ```yaml
 - name: Install dependencies
   run: pnpm install --no-frozen-lockfile
 ```
 
 **Option 2: Générer le lockfile localement et le committer**
+
 ```bash
 # Localement
 pnpm install
@@ -107,6 +117,7 @@ git push
 ```
 
 **Option 3: Générer le lockfile en CI et l'uploader**
+
 ```yaml
 - name: Install dependencies
   run: pnpm install
@@ -119,7 +130,9 @@ git push
 ```
 
 ### 📝 Recommandation
+
 Pour un monorepo en développement actif:
+
 - Utiliser `--no-frozen-lockfile` en CI
 - Générer et committer `pnpm-lock.yaml` en local
 - En production, utiliser `--frozen-lockfile` avec lockfile commité
@@ -129,17 +142,20 @@ Pour un monorepo en développement actif:
 ## 🔴 Erreur 3: Maven build fails with missing dependencies
 
 ### ❌ Problème
+
 ```
-[ERROR] Failed to execute goal on project empi-service: 
+[ERROR] Failed to execute goal on project empi-service:
 Could not find artifact com.sih:types-java:jar:1.0.0
 ```
 
 ### 🔍 Cause
+
 Les dépendances entre modules Maven ne sont pas résolues. Le module `types-java` doit être compilé avant les services qui en dépendent.
 
 ### ✅ Solution
 
 **Utiliser le pom.xml parent avec modules:**
+
 ```xml
 <project>
   <modelVersion>4.0.0</modelVersion>
@@ -158,6 +174,7 @@ Les dépendances entre modules Maven ne sont pas résolues. Le module `types-jav
 ```
 
 **Build Maven en CI:**
+
 ```yaml
 - name: Build with Maven
   run: mvn clean package -DskipTests
@@ -170,16 +187,19 @@ Maven résoudra automatiquement l'ordre de compilation.
 ## 🔴 Erreur 4: Node.js workspace resolution fails
 
 ### ❌ Problème
+
 ```
 Error: Cannot find module '@sih/types-ts'
 ```
 
 ### 🔍 Cause
+
 Les workspaces pnpm ne sont pas configurés correctement ou les dépendances ne sont pas installées.
 
 ### ✅ Solution
 
 **Vérifier pnpm-workspace.yaml:**
+
 ```yaml
 packages:
   - 'services/java/*'
@@ -189,6 +209,7 @@ packages:
 ```
 
 **Vérifier les package.json des services:**
+
 ```json
 {
   "name": "@sih/api-gateway",
@@ -200,6 +221,7 @@ packages:
 ```
 
 **En CI:**
+
 ```yaml
 - name: Install dependencies
   run: pnpm install --no-frozen-lockfile
@@ -213,16 +235,19 @@ packages:
 ## 🔴 Erreur 5: Docker build fails in CI
 
 ### ❌ Problème
+
 ```
 failed to solve with frontend dockerfile.v0: failed to build LLM model
 ```
 
 ### 🔍 Cause
+
 Les artifacts de build ne sont pas disponibles ou les chemins sont incorrects.
 
 ### ✅ Solution
 
 **Utiliser les artifacts uploadés:**
+
 ```yaml
 - name: Download Java artifacts
   uses: actions/download-artifact@v3
@@ -235,6 +260,7 @@ Les artifacts de build ne sont pas disponibles ou les chemins sont incorrects.
 ```
 
 **Ou utiliser le multi-stage build:**
+
 ```dockerfile
 FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /app
@@ -251,16 +277,19 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 ## 🔴 Erreur 6: Tests timeout in CI
 
 ### ❌ Problème
+
 ```
 Error: Test timeout exceeded 30000ms
 ```
 
 ### 🔍 Cause
+
 Les tests prennent trop de temps en CI (pas d'optimisation, pas de cache, etc.)
 
 ### ✅ Solution
 
 **Augmenter le timeout:**
+
 ```yaml
 - name: Run tests
   run: pnpm test
@@ -268,6 +297,7 @@ Les tests prennent trop de temps en CI (pas d'optimisation, pas de cache, etc.)
 ```
 
 **Ou utiliser des test containers:**
+
 ```yaml
 services:
   postgres:
@@ -282,6 +312,7 @@ services:
 ```
 
 **Ou sauter les tests en CI:**
+
 ```yaml
 - name: Build
   run: mvn clean package -DskipTests
@@ -331,17 +362,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       # ✅ pnpm AVANT setup-node
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-      
+
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm lint
       - run: pnpm format:check
@@ -351,15 +382,15 @@ jobs:
     needs: lint-and-format
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-      
+
       - run: mvn clean package -DskipTests
-      
+
       - uses: actions/upload-artifact@v3
         with:
           name: java-artifacts
@@ -371,20 +402,20 @@ jobs:
     needs: lint-and-format
     steps:
       - uses: actions/checkout@v4
-      
+
       # ✅ pnpm AVANT setup-node
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-      
+
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm build
-      
+
       - uses: actions/upload-artifact@v3
         with:
           name: nodejs-artifacts
@@ -405,4 +436,4 @@ jobs:
 
 **Document créé pour éviter les erreurs CI/CD répétitives! 📋**
 
-*Dernière mise à jour: 11 Décembre 2025*
+_Dernière mise à jour: 11 Décembre 2025_
