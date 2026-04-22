@@ -8,12 +8,24 @@ function App() {
         <p>Architecture Hub-and-Spoke pour la gestion hospitalière</p>
         <nav>
           <ul>
-            <li><a href="#empi">EMPI</a></li>
-            <li><a href="#dpi">DPI</a></li>
-            <li><a href="#cpoe">CPOE</a></li>
-            <li><a href="#lis">LIS</a></li>
-            <li><a href="#ris">RIS</a></li>
-            <li><a href="#pharmacy">Pharmacie</a></li>
+            <li>
+              <a href="#empi">EMPI</a>
+            </li>
+            <li>
+              <a href="#dpi">DPI</a>
+            </li>
+            <li>
+              <a href="#cpoe">CPOE</a>
+            </li>
+            <li>
+              <a href="#lis">LIS</a>
+            </li>
+            <li>
+              <a href="#ris">RIS</a>
+            </li>
+            <li>
+              <a href="#pharmacy">Pharmacie</a>
+            </li>
           </ul>
         </nav>
       </header>

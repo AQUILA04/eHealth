@@ -32,12 +32,14 @@ Le système eHealth est organisé en **monorepo polyglotte** qui combine les for
 ### Fonctionnalités principales
 
 **Hub Central (Interopérabilité & Identité)**
+
 - **EMPI (Enterprise Master Patient Index)** - Gestion unique de l'identité patient avec support MOSIP
 - **HIE Router** - Routage des échanges d'information de santé conformes FHIR R4/R5
 - **Consent Service** - Gestion des consentements patients pour le partage de données
 - **Terminology Service** - Service de terminologie standardisée (SNOMED CT, LOINC, ICD-10)
 
 **Nœuds Locaux (Clinique/Hôpital)**
+
 - **GAP (Gestion Administrative du Patient)** - Admission, transfert, sortie (ADT), gestion des lits
 - **DPI (Dossier Patient Informatisé)** - Dossier clinique électronique avec support FHIR
 - **CPOE** - Prescription informatisée avec support à la décision clinique
@@ -46,6 +48,7 @@ Le système eHealth est organisé en **monorepo polyglotte** qui combine les for
 - **Pharmacy** - Gestion de la pharmacie hospitalière
 
 **Services Transversaux**
+
 - **API Gateway** - Point d'entrée unique avec authentification et routage
 - **Workflow Engine** - Orchestration des processus métiers
 - **Notification Service** - Notifications multi-canaux (SMS, Email, Push)
@@ -78,15 +81,15 @@ Le projet suit une architecture **Hub-and-Spoke** avec une approche **microservi
 
 ### Choix technologiques stratégiques
 
-| Composant | Technologie | Justification |
-|-----------|-------------|---------------|
-| **Services critiques** | Java 17 + Spring Boot 3.1 | Robustesse transactionnelle, HAPI FHIR, écosystème santé mature |
-| **Services légers** | Node.js 20 + NestJS 10 | Performance I/O, architecture modulaire, gRPC natif |
-| **Frontend** | React 18 + Vite 5 | Composants réutilisables, performance, écosystème riche |
-| **Bases de données** | PostgreSQL 16 + MongoDB 7 | ACID pour données structurées, flexibilité pour DPI |
-| **Messaging** | RabbitMQ 3.12 | Fiabilité, event-driven architecture |
-| **gRPC** | Protocol Buffers 3 | Performance, contrats stricts inter-services |
-| **Interopérabilité** | FHIR R4/R5 (HAPI FHIR 6.8) | Standard mondial pour l'échange de données de santé |
+| Composant              | Technologie                | Justification                                                   |
+| ---------------------- | -------------------------- | --------------------------------------------------------------- |
+| **Services critiques** | Java 17 + Spring Boot 3.1  | Robustesse transactionnelle, HAPI FHIR, écosystème santé mature |
+| **Services légers**    | Node.js 20 + NestJS 10     | Performance I/O, architecture modulaire, gRPC natif             |
+| **Frontend**           | React 18 + Vite 5          | Composants réutilisables, performance, écosystème riche         |
+| **Bases de données**   | PostgreSQL 16 + MongoDB 7  | ACID pour données structurées, flexibilité pour DPI             |
+| **Messaging**          | RabbitMQ 3.12              | Fiabilité, event-driven architecture                            |
+| **gRPC**               | Protocol Buffers 3         | Performance, contrats stricts inter-services                    |
+| **Interopérabilité**   | FHIR R4/R5 (HAPI FHIR 6.8) | Standard mondial pour l'échange de données de santé             |
 
 Pour plus de détails, consultez [MONOREPO_ARCHITECTURE.md](./MONOREPO_ARCHITECTURE.md).
 
@@ -95,6 +98,7 @@ Pour plus de détails, consultez [MONOREPO_ARCHITECTURE.md](./MONOREPO_ARCHITECT
 ## 🛠️ Technologies
 
 ### Backend Java
+
 - **Framework:** Spring Boot 3.1.5, Spring Cloud 2022.0.4
 - **FHIR:** HAPI FHIR 6.8.0 (R4/R5)
 - **Communication:** gRPC 1.59.0, Protobuf 3.24.0
@@ -103,6 +107,7 @@ Pour plus de détails, consultez [MONOREPO_ARCHITECTURE.md](./MONOREPO_ARCHITECT
 - **Tests:** JUnit 5.9.3
 
 ### Backend Node.js
+
 - **Framework:** NestJS 10.2.1
 - **Runtime:** Node.js 20.x LTS
 - **Communication:** gRPC, REST
@@ -111,6 +116,7 @@ Pour plus de détails, consultez [MONOREPO_ARCHITECTURE.md](./MONOREPO_ARCHITECT
 - **Tests:** Jest 29.7.0
 
 ### Frontend
+
 - **Framework:** React 18.2.0
 - **Build:** Vite 5.0.0
 - **State Management:** Zustand 4.4.1
@@ -119,6 +125,7 @@ Pour plus de détails, consultez [MONOREPO_ARCHITECTURE.md](./MONOREPO_ARCHITECT
 - **Tests:** Vitest 0.34.0
 
 ### Infrastructure
+
 - **Conteneurisation:** Docker 24.x
 - **Orchestration:** Kubernetes 1.28.x
 - **CI/CD:** GitHub Actions
@@ -132,6 +139,7 @@ Pour plus de détails, consultez [MONOREPO_ARCHITECTURE.md](./MONOREPO_ARCHITECT
 Avant de commencer, assurez-vous d'avoir installé:
 
 ### Obligatoire
+
 - **Java 17+** (OpenJDK ou Oracle JDK)
 - **Node.js 20.x LTS**
 - **pnpm 8.x** (`npm install -g pnpm`)
@@ -140,6 +148,7 @@ Avant de commencer, assurez-vous d'avoir installé:
 - **Git 2.x**
 
 ### Recommandé
+
 - **IDE:** IntelliJ IDEA (Java) + VS Code (Node.js/React)
 - **Kubernetes:** Minikube ou Docker Desktop (pour tests locaux)
 - **PostgreSQL 16** et **MongoDB 7** (ou via Docker Compose)
@@ -171,12 +180,14 @@ cd eHealth
 #### Option A: Script automatique (Recommandé)
 
 **Linux/macOS:**
+
 ```bash
 chmod +x infrastructure/scripts/setup.sh
 ./infrastructure/scripts/setup.sh
 ```
 
 **Windows:**
+
 ```cmd
 infrastructure\scripts\setup.bat
 ```
@@ -184,11 +195,13 @@ infrastructure\scripts\setup.bat
 #### Option B: Installation manuelle
 
 **Dépendances Node.js:**
+
 ```bash
 pnpm install
 ```
 
 **Dépendances Java:**
+
 ```bash
 mvn clean install -DskipTests
 ```
@@ -236,6 +249,7 @@ pnpm docker:up
 ```
 
 Cette commande démarre:
+
 - PostgreSQL (port 5432)
 - MongoDB (port 27017)
 - RabbitMQ (port 5672, Management UI: 15672)
@@ -269,6 +283,7 @@ eHealth/
 ### Commandes de développement
 
 #### Démarrer tous les services en mode développement
+
 ```bash
 pnpm dev
 ```
@@ -276,18 +291,21 @@ pnpm dev
 #### Démarrer un service spécifique
 
 **Service Java:**
+
 ```bash
 cd services/java/empi-service
 mvn spring-boot:run
 ```
 
 **Service Node.js:**
+
 ```bash
 cd services/nodejs/api-gateway
 pnpm dev
 ```
 
 **Frontend:**
+
 ```bash
 cd services/frontend
 pnpm dev
@@ -316,6 +334,7 @@ pnpm format:check
 ### Exécuter tous les tests
 
 #### Option A: Script automatique
+
 ```bash
 # Linux/macOS
 ./infrastructure/scripts/test.sh
@@ -327,16 +346,19 @@ infrastructure\scripts\test.bat
 #### Option B: Commandes manuelles
 
 **Tests Java:**
+
 ```bash
 mvn test
 ```
 
 **Tests Node.js:**
+
 ```bash
 pnpm test
 ```
 
 **Tests avec couverture:**
+
 ```bash
 # Java
 mvn test jacoco:report
@@ -363,6 +385,7 @@ pnpm test:e2e
 ### Build de tous les services
 
 #### Option A: Script automatique
+
 ```bash
 # Linux/macOS
 ./infrastructure/scripts/build.sh
@@ -374,16 +397,19 @@ infrastructure\scripts\build.bat
 #### Option B: Commandes manuelles
 
 **Services Java:**
+
 ```bash
 mvn clean package -DskipTests
 ```
 
 **Services Node.js:**
+
 ```bash
 pnpm build
 ```
 
 **Frontend:**
+
 ```bash
 cd services/frontend
 pnpm build
@@ -434,6 +460,7 @@ kubectl get services -n ehealth
 ### CI/CD
 
 Le pipeline GitHub Actions est configuré pour:
+
 1. **Lint & Format Check** - Vérification de la qualité du code
 2. **Build Java** - Compilation des services Java
 3. **Build Node.js** - Compilation des services Node.js
@@ -470,11 +497,13 @@ Le pipeline GitHub Actions est configuré pour:
 Nous suivons la méthodologie **Git Flow** pour la gestion des branches:
 
 ### Branches principales
+
 - `main` - Code en production (protégée)
 - `develop` - Code en développement (protégée)
 - `release/*` - Préparation de release (protégée)
 
 ### Branches de travail
+
 - `feature/*` - Nouvelles fonctionnalités
 - `bugfix/*` - Corrections de bugs
 - `hotfix/*` - Corrections urgentes en production
@@ -482,6 +511,7 @@ Nous suivons la méthodologie **Git Flow** pour la gestion des branches:
 ### Workflow de contribution
 
 1. **Créer une branche depuis develop:**
+
    ```bash
    git checkout develop
    git pull origin develop
@@ -489,12 +519,14 @@ Nous suivons la méthodologie **Git Flow** pour la gestion des branches:
    ```
 
 2. **Développer et commiter:**
+
    ```bash
    git add .
    git commit -m "feat: ajout de ma fonctionnalité"
    ```
 
 3. **Pousser et créer une Pull Request:**
+
    ```bash
    git push origin feature/ma-fonctionnalite
    ```
@@ -533,6 +565,7 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](./LICENSE) pour plus d
 ## 📞 Support
 
 Pour toute question ou problème:
+
 - **Issues:** https://github.com/AQUILA04/eHealth/issues
 - **Discussions:** https://github.com/AQUILA04/eHealth/discussions
 

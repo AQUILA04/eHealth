@@ -3,6 +3,7 @@
 ## Vue d'ensemble
 
 Le projet eHealth est organisé comme un **monorepo polyglotte** utilisant une approche stratégique:
+
 - **Java/Spring Boot** pour les services critiques (EMPI, HIE, DPI) nécessitant FHIR R4/R5 et haute performance transactionnelle
 - **Node.js/NestJS** pour les services légers (Workflow, Notifications, API Gateway)
 - **React** pour le frontend
@@ -296,7 +297,9 @@ eHealth/
 ## Stratégie de Dépendances
 
 ### Services Java (Spring Boot)
+
 **Dépendances communes (pom.xml parent):**
+
 - `spring-boot-starter-web`
 - `spring-boot-starter-data-jpa`
 - `spring-boot-starter-security`
@@ -316,7 +319,9 @@ eHealth/
 - `io.micrometer:micrometer-registry-prometheus`
 
 ### Services Node.js (NestJS)
+
 **Dépendances communes (services/nodejs/package.json):**
+
 - `@nestjs/core`
 - `@nestjs/common`
 - `@nestjs/platform-express`
@@ -340,7 +345,9 @@ eHealth/
 - `class-transformer`
 
 ### Frontend (React)
+
 **Dépendances (services/frontend/package.json):**
+
 - `react`
 - `react-dom`
 - `react-router-dom`
@@ -354,18 +361,21 @@ eHealth/
 ## Conventions de Nommage
 
 ### Java
+
 - **Packages:** `com.sih.{service}.{module}` (ex: `com.sih.empi.service`)
 - **Classes:** PascalCase (ex: `EmpiService`, `PatientController`)
 - **Méthodes:** camelCase (ex: `getPatientById()`)
 - **Constantes:** UPPER_SNAKE_CASE
 
 ### Node.js/TypeScript
+
 - **Packages:** kebab-case (ex: `api-gateway`, `workflow-engine`)
 - **Fichiers:** kebab-case (ex: `patient.service.ts`, `auth.middleware.ts`)
 - **Classes/Interfaces:** PascalCase (ex: `PatientService`, `IPatient`)
 - **Fonctions/Variables:** camelCase
 
 ### Git Branches
+
 - `main` - Production
 - `develop` - Développement
 - `feature/*` - Nouvelles fonctionnalités
@@ -375,56 +385,62 @@ eHealth/
 
 ## Outils et Frameworks
 
-| Catégorie | Outil | Version | Justification |
-|-----------|-------|---------|---------------|
-| **Backend Java** | Spring Boot | 3.1.x | Écosystème mature, FHIR, microservices |
-| **Backend Java** | Spring Cloud | 2022.x | Service discovery, config management |
-| **Backend Java** | HAPI FHIR | 6.x | Référence FHIR R4/R5 |
-| **Backend Node.js** | NestJS | 10.x | Architecture modulaire, gRPC |
-| **Frontend** | React | 18.x | Composants, écosystème riche |
-| **Frontend Build** | Vite | 5.x | Performance, HMR rapide |
-| **Database (Relational)** | PostgreSQL | 16.x | ACID, JSONB, robustesse |
-| **Database (Document)** | MongoDB | 7.x | Flexibilité pour DPI |
-| **gRPC** | Protocol Buffers | 3.x | Performance, contrats stricts |
-| **Messaging** | RabbitMQ | 3.12.x | Fiabilité, event-driven |
-| **Testing (Java)** | JUnit 5 | 5.9.x | Framework standard |
-| **Testing (Node.js)** | Jest | 29.x | Coverage, snapshot testing |
-| **Container** | Docker | 24.x | Isolation, déploiement |
-| **Orchestration** | Kubernetes | 1.28.x | Scalabilité, HA |
-| **Build (Java)** | Maven | 3.9.x | Gestion dépendances, plugins |
-| **Build (Node.js)** | pnpm | 8.x | Efficacité workspaces |
+| Catégorie                 | Outil            | Version | Justification                          |
+| ------------------------- | ---------------- | ------- | -------------------------------------- |
+| **Backend Java**          | Spring Boot      | 3.1.x   | Écosystème mature, FHIR, microservices |
+| **Backend Java**          | Spring Cloud     | 2022.x  | Service discovery, config management   |
+| **Backend Java**          | HAPI FHIR        | 6.x     | Référence FHIR R4/R5                   |
+| **Backend Node.js**       | NestJS           | 10.x    | Architecture modulaire, gRPC           |
+| **Frontend**              | React            | 18.x    | Composants, écosystème riche           |
+| **Frontend Build**        | Vite             | 5.x     | Performance, HMR rapide                |
+| **Database (Relational)** | PostgreSQL       | 16.x    | ACID, JSONB, robustesse                |
+| **Database (Document)**   | MongoDB          | 7.x     | Flexibilité pour DPI                   |
+| **gRPC**                  | Protocol Buffers | 3.x     | Performance, contrats stricts          |
+| **Messaging**             | RabbitMQ         | 3.12.x  | Fiabilité, event-driven                |
+| **Testing (Java)**        | JUnit 5          | 5.9.x   | Framework standard                     |
+| **Testing (Node.js)**     | Jest             | 29.x    | Coverage, snapshot testing             |
+| **Container**             | Docker           | 24.x    | Isolation, déploiement                 |
+| **Orchestration**         | Kubernetes       | 1.28.x  | Scalabilité, HA                        |
+| **Build (Java)**          | Maven            | 3.9.x   | Gestion dépendances, plugins           |
+| **Build (Node.js)**       | pnpm             | 8.x     | Efficacité workspaces                  |
 
 ## Phases d'Implémentation
 
 ### Phase 1: Setup Monorepo (ACTUELLE)
+
 - [x] Initialiser structure polyglotte
 - [x] Configurer Maven parent et pnpm workspaces
 - [ ] Configurer CI/CD multi-langage
 - [ ] Initialiser gitflow
 
 ### Phase 2: Services Fondamentaux (Java)
+
 - [ ] Service EMPI (Hub) - Spring Boot + HAPI FHIR
 - [ ] Service GAP (Spoke) - Spring Boot
 - [ ] Service DPI (Spoke) - Spring Boot + HAPI FHIR
 - [ ] API Gateway (Node.js)
 
 ### Phase 3: Services Secondaires (Java)
+
 - [ ] CPOE Service
 - [ ] LIS Service
 - [ ] RIS Service
 - [ ] Pharmacy Service
 
 ### Phase 4: Services Légers (Node.js)
+
 - [ ] Workflow Engine
 - [ ] Notification Service
 - [ ] Audit Service
 
 ### Phase 5: Frontend et Intégration
+
 - [ ] Application React
 - [ ] Intégration API Gateway
 - [ ] Tests E2E
 
 ### Phase 6: Infrastructure et Déploiement
+
 - [ ] Docker Compose multi-langage
 - [ ] Kubernetes manifests
 - [ ] Terraform IaC
@@ -433,6 +449,7 @@ eHealth/
 ## Bonnes Pratiques
 
 ### Général
+
 1. **Isolation des Services:** Chaque service a sa propre DB
 2. **Communication:** gRPC interne (Java↔Java), REST/FHIR externe
 3. **Versioning:** Semantic versioning pour tous les packages
@@ -440,6 +457,7 @@ eHealth/
 5. **Tests:** Couverture minimale 80% pour services critiques
 
 ### Java
+
 1. **Architecture:** Couches (Controller → Service → Repository)
 2. **Validation:** `@Valid` + `ConstraintValidator`
 3. **Logging:** SLF4J + Logback
@@ -447,6 +465,7 @@ eHealth/
 5. **Security:** Spring Security + JWT
 
 ### Node.js
+
 1. **Architecture:** Modules NestJS avec DI
 2. **Validation:** `class-validator` + `class-transformer`
 3. **Logging:** Pino ou Winston
@@ -454,6 +473,7 @@ eHealth/
 5. **Security:** Helmet + Passport
 
 ### Frontend
+
 1. **Composants:** Réutilisables, props bien typées
 2. **State:** Zustand pour état global
 3. **API:** Axios + React Query
@@ -480,4 +500,3 @@ eHealth/
 │              Message Broker (Event Bus)                 │
 └─────────────────────────────────────────────────────────┘
 ```
-

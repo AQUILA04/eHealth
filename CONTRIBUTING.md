@@ -138,18 +138,20 @@ Une fois approuvé, votre PR sera mergée dans `develop` ou `main`.
 ### Java
 
 **Conventions:**
+
 - Packages: `com.sih.{service}.{module}`
 - Classes: PascalCase (ex: `EmpiService`)
 - Méthodes: camelCase (ex: `getPatientById()`)
 - Constantes: UPPER_SNAKE_CASE
 
 **Exemple:**
+
 ```java
 @Service
 @RequiredArgsConstructor
 public class PatientService {
     private final PatientRepository patientRepository;
-    
+
     public Patient getPatientById(String id) {
         return patientRepository.findById(id)
             .orElseThrow(() -> new PatientNotFoundException(id));
@@ -160,12 +162,14 @@ public class PatientService {
 ### TypeScript/JavaScript
 
 **Conventions:**
+
 - Fichiers: kebab-case (ex: `patient.service.ts`)
 - Classes/Interfaces: PascalCase (ex: `PatientService`)
 - Fonctions/Variables: camelCase (ex: `getPatientById()`)
 - Constantes: UPPER_SNAKE_CASE
 
 **Exemple:**
+
 ```typescript
 @Injectable()
 export class PatientService {
@@ -264,24 +268,25 @@ mvn test jacoco:report
 ### Écrire des tests
 
 **Java:**
+
 ```java
 @SpringBootTest
 class PatientServiceTest {
     @MockBean
     private PatientRepository patientRepository;
-    
+
     @InjectMocks
     private PatientService patientService;
-    
+
     @Test
     void testGetPatientById() {
         // Arrange
         Patient patient = new Patient();
         when(patientRepository.findById("123")).thenReturn(Optional.of(patient));
-        
+
         // Act
         Patient result = patientService.getPatientById("123");
-        
+
         // Assert
         assertNotNull(result);
         verify(patientRepository).findById("123");
@@ -290,6 +295,7 @@ class PatientServiceTest {
 ```
 
 **TypeScript:**
+
 ```typescript
 describe('PatientService', () => {
   let service: PatientService;
@@ -322,6 +328,7 @@ describe('PatientService', () => {
 ### Documenter votre code
 
 **Java:**
+
 ```java
 /**
  * Récupère un patient par son identifiant.
@@ -336,6 +343,7 @@ public Patient getPatientById(String id) {
 ```
 
 **TypeScript:**
+
 ```typescript
 /**
  * Récupère un patient par son identifiant.
@@ -363,15 +371,18 @@ getPatientById(id: string): Promise<Patient> {
 
 ```markdown
 ## Description
+
 Brève description des changements
 
 ## Type de changement
+
 - [ ] Correction de bug
 - [ ] Nouvelle fonctionnalité
 - [ ] Changement cassant
 - [ ] Documentation
 
 ## Services affectés
+
 - [ ] EMPI Service
 - [ ] DPI Service
 - [ ] API Gateway
@@ -379,6 +390,7 @@ Brève description des changements
 - [ ] Infrastructure
 
 ## Checklist
+
 - [ ] Mon code suit les conventions du projet
 - [ ] J'ai exécuté les tests localement
 - [ ] J'ai ajouté des tests pour mes changements
@@ -387,15 +399,18 @@ Brève description des changements
 - [ ] Pas de secrets/credentials exposés
 
 ## Tests effectués
+
 Décrivez les tests que vous avez exécutés
 
 ## Lien vers les issues
+
 Closes #123
 ```
 
 ### Critères d'approbation
 
 Une PR doit satisfaire:
+
 1. ✅ Tous les tests passent
 2. ✅ Code review approuvée
 3. ✅ Pas de conflits de merge
@@ -410,29 +425,36 @@ Une PR doit satisfaire:
 
 ```markdown
 ## Description du bug
+
 Description claire et concise du bug
 
 ## Étapes pour reproduire
+
 1. Aller à...
 2. Cliquer sur...
 3. Observer le comportement...
 
 ## Comportement attendu
+
 Description de ce qui devrait se passer
 
 ## Comportement actuel
+
 Description de ce qui se passe réellement
 
 ## Environnement
+
 - OS: [ex: Ubuntu 22.04]
 - Java: [ex: 17.0.1]
 - Node.js: [ex: 20.x]
 - Service affecté: [ex: EMPI Service]
 
 ## Logs/Screenshots
+
 Attachez les logs ou screenshots pertinents
 
 ## Contexte supplémentaire
+
 Toute information supplémentaire utile
 ```
 
@@ -444,18 +466,23 @@ Toute information supplémentaire utile
 
 ```markdown
 ## Description de l'amélioration
+
 Description claire de l'amélioration proposée
 
 ## Motivation
+
 Pourquoi cette amélioration est-elle nécessaire?
 
 ## Solution proposée
+
 Description de la solution proposée
 
 ## Alternatives considérées
+
 Autres solutions envisagées
 
 ## Impact potentiel
+
 Quel serait l'impact de cette amélioration?
 ```
 

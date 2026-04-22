@@ -23,13 +23,13 @@
 
 L'architecture hybride combine **Artemis** et **Kafka** pour offrir une solution de messaging robuste et conforme aux normes réglementaires:
 
-| Aspect | Artemis | Kafka | Cas d'usage |
-|--------|---------|-------|-----------|
-| **Rôle** | Transactions critiques | Audit trail immuable | Complémentaires |
-| **Garantie** | ACID (Atomicité) | Immuabilité (Append-only) | Sécurité + Conformité |
-| **Latence** | Ultra-basse (1-5ms) | Basse (5-20ms) | Temps réel vs Historique |
-| **Rétention** | Courte (heures) | Longue (30+ jours) | Opérationnel vs Audit |
-| **Replay** | Non natif | Natif (offset management) | Récupération vs Analyse |
+| Aspect        | Artemis                | Kafka                     | Cas d'usage              |
+| ------------- | ---------------------- | ------------------------- | ------------------------ |
+| **Rôle**      | Transactions critiques | Audit trail immuable      | Complémentaires          |
+| **Garantie**  | ACID (Atomicité)       | Immuabilité (Append-only) | Sécurité + Conformité    |
+| **Latence**   | Ultra-basse (1-5ms)    | Basse (5-20ms)            | Temps réel vs Historique |
+| **Rétention** | Courte (heures)        | Longue (30+ jours)        | Opérationnel vs Audit    |
+| **Replay**    | Non natif              | Natif (offset management) | Récupération vs Analyse  |
 
 ---
 
@@ -79,13 +79,14 @@ Artemis est utilisé pour les opérations **critiques** qui nécessitent une gar
 ### Configuration Artemis
 
 **Docker Compose:**
+
 ```yaml
 artemis:
   image: quay.io/artemiscloud/activemq-artemis:latest
   ports:
-    - "61616:61616"  # OpenWire (Java)
-    - "5672:5672"    # AMQP
-    - "8161:8161"    # Management UI
+    - '61616:61616' # OpenWire (Java)
+    - '5672:5672' # AMQP
+    - '8161:8161' # Management UI
   environment:
     ARTEMIS_USER: ehealth
     ARTEMIS_PASSWORD: ehealth_dev_password
@@ -132,13 +133,14 @@ Kafka est utilisé pour l'**audit trail immuable** et le **replay d'événements
 ### Configuration Kafka
 
 **Docker Compose:**
+
 ```yaml
 kafka:
   image: confluentinc/cp-kafka:7.5.0
   ports:
-    - "9092:9092"
+    - '9092:9092'
   environment:
-    KAFKA_LOG_RETENTION_HOURS: 720  # 30 jours
+    KAFKA_LOG_RETENTION_HOURS: 720 # 30 jours
     KAFKA_COMPRESSION_TYPE: snappy
 ```
 
@@ -173,11 +175,11 @@ ehealth.analytics.events              → Événements pour analytics
 @RequiredArgsConstructor
 public class PatientService {
     private final EventPublisher eventPublisher;
-    
+
     public void admitPatient(PatientAdmissionRequest request) {
         // Logique métier
         Patient patient = createPatient(request);
-        
+
         // Créer l'événement
         PatientAdmittedEvent event = PatientAdmittedEvent.builder()
             .patientId(patient.getId())
@@ -191,7 +193,7 @@ public class PatientService {
             .actorId(getCurrentUserId())
             .actorRole("ADMIN")
             .build();
-        
+
         // Publier sur Artemis (ACID) + Kafka (Audit)
         eventPublisher.publishCriticalEvent(event);
     }
@@ -203,19 +205,19 @@ public class PatientService {
 ```java
 @Service
 public class DPIEventHandler extends ArtemisEventListener {
-    
+
     @Override
     protected void processPatientAdmitted(PatientAdmittedEvent event) {
         log.info("DPI: Traitement de l'admission du patient {}", event.getPatientId());
-        
+
         // Créer le dossier patient dans DPI
         PatientRecord record = new PatientRecord();
         record.setPatientId(event.getPatientId());
         record.setFirstName(event.getFirstName());
         record.setLastName(event.getLastName());
-        
+
         patientRecordRepository.save(record);
-        
+
         log.info("✅ Dossier patient créé dans DPI");
     }
 }
@@ -226,13 +228,13 @@ public class DPIEventHandler extends ArtemisEventListener {
 ```java
 @Service
 public class AuditService extends KafkaEventListener {
-    
+
     @Override
     protected void handlePatientEventAudit(DomainEvent event, String topic) {
-        log.info("Audit: Enregistrement de l'événement {} pour le patient {}", 
-            event.getEventType(), 
+        log.info("Audit: Enregistrement de l'événement {} pour le patient {}",
+            event.getEventType(),
             ((PatientAdmittedEvent) event).getPatientId());
-        
+
         // Enregistrer dans Elasticsearch pour recherche
         AuditLog auditLog = new AuditLog();
         auditLog.setEventId(event.getEventId());
@@ -240,7 +242,7 @@ public class AuditService extends KafkaEventListener {
         auditLog.setActorId(event.getActorId());
         auditLog.setTimestamp(event.getTimestamp());
         auditLog.setEventData(event);
-        
+
         auditLogRepository.save(auditLog);
     }
 }
@@ -253,16 +255,16 @@ public class AuditService extends KafkaEventListener {
 @RequiredArgsConstructor
 public class EventReplayService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    
+
     /**
      * Rejoue tous les événements d'un patient depuis une date
      */
     public void replayPatientEvents(String patientId, LocalDateTime fromDate) {
         // Récupérer les événements depuis Kafka (offset management)
         // Kafka permet de chercher par timestamp
-        
+
         log.info("🔄 Replay des événements du patient {} depuis {}", patientId, fromDate);
-        
+
         // Les événements sont rejouables grâce à Kafka
         // Offset reset: earliest
     }
@@ -276,17 +278,18 @@ public class EventReplayService {
 ### Configuration Spring Boot
 
 **application.yml:**
+
 ```yaml
 spring:
   profiles:
     active: artemis,kafka
-  
+
   artemis:
     host: localhost
     port: 61616
     user: ehealth
     password: ehealth_dev_password
-  
+
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
@@ -301,7 +304,7 @@ spring:
 @RequiredArgsConstructor
 public class PatientEventService {
     private final EventPublisher eventPublisher;
-    
+
     public void handlePatientAdmission(PatientAdmissionRequest request) {
         // Publier l'événement
         PatientAdmittedEvent event = new PatientAdmittedEvent(
@@ -309,7 +312,7 @@ public class PatientEventService {
             request.getFirstName(),
             request.getLastName()
         );
-        
+
         eventPublisher.publishCriticalEvent(event);
     }
 }
@@ -324,6 +327,7 @@ public class PatientEventService {
 **URL:** http://localhost:8161
 
 **Fonctionnalités:**
+
 - Voir les queues et topics
 - Monitorer les messages
 - Voir les consumers
@@ -334,6 +338,7 @@ public class PatientEventService {
 **URL:** http://localhost:8080
 
 **Fonctionnalités:**
+
 - Voir les topics et partitions
 - Monitorer les messages
 - Voir les consumer groups
@@ -391,6 +396,7 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
 ### Messages perdus
 
 **Vérifier:**
+
 1. Artemis: Vérifier la persistance du journal
 2. Kafka: Vérifier les réplicas et la rétention
 3. Logs: Chercher les erreurs de publication
@@ -398,6 +404,7 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
 ### Performance dégradée
 
 **Optimisations:**
+
 1. Augmenter les threads concurrents
 2. Augmenter la taille des batches
 3. Ajouter des partitions Kafka
@@ -420,6 +427,7 @@ docker ps | grep -E "artemis|kafka"
 ### Production
 
 **Considérations:**
+
 1. **Artemis:** Cluster Master/Slave (2-3 nœuds)
 2. **Kafka:** Cluster 3-5 brokers avec réplication 3
 3. **Monitoring:** Prometheus + Grafana
@@ -457,4 +465,4 @@ docker ps | grep -E "artemis|kafka"
 
 **Architecture hybride Artemis + Kafka implémentée avec succès! 🎉**
 
-*Dernière mise à jour: 11 Décembre 2025*
+_Dernière mise à jour: 11 Décembre 2025_

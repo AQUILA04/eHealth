@@ -8,6 +8,7 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+
 - Architecture initiale du monorepo polyglotte
 - Configuration Maven parent pour services Java
 - Configuration pnpm workspaces pour services Node.js
@@ -24,15 +25,19 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Support pour PostgreSQL, MongoDB, RabbitMQ, Redis, Prometheus, Grafana, ELK
 
 ### Changed
+
 - Mise à jour du README avec documentation complète
 
 ### Fixed
+
 - N/A
 
 ### Removed
+
 - N/A
 
 ### Security
+
 - Configuration de sécurité dans les Dockerfiles (utilisateurs non-root)
 - Headers de sécurité dans Nginx
 - Support JWT pour authentification
@@ -44,6 +49,7 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Initial Release
 
 #### Added
+
 - **Monorepo Structure**
   - Architecture polyglotte (Java + Node.js + React)
   - 9 services Java/Spring Boot (EMPI, HIE, DPI, GAP, CPOE, LIS, RIS, Pharmacy, Consent)
@@ -70,7 +76,7 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Tests unitaires et d'intégration
   - Security scan avec Trivy
   - Build et push Docker automatisé
-  - Support des branches main, develop, feature/*, release/*
+  - Support des branches main, develop, feature/_, release/_
 
 - **Infrastructure**
   - Docker Compose pour développement local
@@ -91,6 +97,7 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - CHANGELOG.md (ce fichier)
 
 #### Technology Stack
+
 - **Backend Java:** Spring Boot 3.1.5, HAPI FHIR 6.8.0, gRPC 1.59.0
 - **Backend Node.js:** NestJS 10.2.1, TypeScript 5.2.2
 - **Frontend:** React 18.2.0, Vite 5.0.0, Tailwind CSS 3.3.0
@@ -101,6 +108,7 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Container:** Docker 24.x, Kubernetes 1.28.x
 
 #### Known Issues
+
 - Maven n'est pas installé dans l'environnement de développement (à installer manuellement)
 - pnpm-lock.yaml n'est pas généré (à générer lors de la première installation)
 
@@ -111,21 +119,27 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### [X.Y.Z] - YYYY-MM-DD
 
 #### Added
+
 - Nouvelles fonctionnalités
 
 #### Changed
+
 - Changements dans les fonctionnalités existantes
 
 #### Deprecated
+
 - Fonctionnalités qui seront supprimées dans les versions futures
 
 #### Removed
+
 - Fonctionnalités supprimées
 
 #### Fixed
+
 - Corrections de bugs
 
 #### Security
+
 - Corrections de sécurité
 
 ---
@@ -133,6 +147,7 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Roadmap
 
 ### Phase 2: Services Fondamentaux (Q1 2025)
+
 - [ ] Implémentation complète du service EMPI
 - [ ] Implémentation du service GAP
 - [ ] Implémentation du service DPI avec FHIR
@@ -140,6 +155,7 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - [ ] Tests d'intégration complets
 
 ### Phase 3: Services Secondaires (Q2 2025)
+
 - [ ] Implémentation du service CPOE
 - [ ] Implémentation du service LIS
 - [ ] Implémentation du service RIS
@@ -147,18 +163,21 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - [ ] Intégration avec les services fondamentaux
 
 ### Phase 4: Frontend & UX (Q2-Q3 2025)
+
 - [ ] Développement de l'interface React
 - [ ] Intégration avec l'API Gateway
 - [ ] Tests E2E
 - [ ] Optimisation des performances
 
 ### Phase 5: Infrastructure & DevOps (Q3 2025)
+
 - [ ] Configuration Kubernetes complète
 - [ ] Terraform pour IaC
 - [ ] Monitoring et alerting
 - [ ] Documentation de déploiement
 
 ### Phase 6: Production & Hardening (Q4 2025)
+
 - [ ] Audit de sécurité
 - [ ] Tests de charge
 - [ ] Documentation de production
