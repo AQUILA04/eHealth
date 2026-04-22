@@ -138,7 +138,7 @@ jobs:
           - 5432:5432
 
       mongodb:
-        image: mongo:7-alpine
+        image: mongo:7
         options: >-
           --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
           --health-interval 10s
