@@ -3,16 +3,13 @@ FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /build
 
-# Copy pom files
+# Copy pom files and source code
 COPY pom.xml .
-COPY services/java/*/pom.xml ./services/java/
+COPY services/java ./services/java
+COPY shared/types-java ./shared/types-java
 
 # Build dependencies
 RUN mvn dependency:go-offline -B
-
-# Copy source code
-COPY services/java ./services/java
-COPY shared/types-java ./shared/types-java
 
 # Build application
 RUN mvn clean package -DskipTests
