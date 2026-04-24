@@ -7,7 +7,7 @@ WORKDIR /build
 RUN npm install -g pnpm@8
 
 # Copy package files and source code
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-workspace.yaml tsconfig.json ./
 COPY services/nodejs ./services/nodejs
 COPY services/frontend ./services/frontend
 COPY shared/types-ts ./shared/types-ts
