@@ -277,8 +277,10 @@ jobs:
       - name: Build and push EMPI Service
         uses: docker/build-push-action@v5
         with:
-          context: ./services/java/empi-service
-          file: ./services/java/empi-service/Dockerfile
+          context: .
+          file: ./infrastructure/docker/Dockerfile.java
+          build-args: |
+            SERVICE_NAME=empi-service
           push: true
           tags: ${{ steps.meta-empi.outputs.tags }}
           labels: ${{ steps.meta-empi.outputs.labels }}
@@ -298,8 +300,10 @@ jobs:
       - name: Build and push API Gateway
         uses: docker/build-push-action@v5
         with:
-          context: ./services/nodejs/api-gateway
-          file: ./services/nodejs/api-gateway/Dockerfile
+          context: .
+          file: ./infrastructure/docker/Dockerfile.nodejs
+          build-args: |
+            SERVICE_NAME=api-gateway
           push: true
           tags: ${{ steps.meta-gateway.outputs.tags }}
           labels: ${{ steps.meta-gateway.outputs.labels }}
