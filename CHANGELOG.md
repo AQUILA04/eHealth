@@ -7,8 +7,38 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-### Added
+## [0.2.0] - 2026-06-30
 
+### Added
+- **Mock EMPI Service**
+  - Implémentation d'un mock server EMPI avec base de données H2 in-memory.
+  - Gestion de l'enregistrement des identités patients.
+  - Algorithmes de déduplication (Jaro-Winkler et Levenshtein) pour détecter les doublons.
+  - Endpoints REST pour la recherche et la récupération par UUID global.
+  - Suite de tests unitaires et d'intégration complète.
+
+- **GAP Service (Module I - Gestion Administrative du Patient)**
+  - Implémentation des entités `Patient`, `Encounter` (ADT) et `Appointment`.
+  - Contrôleur `PatientController` pour l'enregistrement et la liaison avec l'EMPI.
+  - Contrôleur `EncounterController` pour le cycle ADT (Admission, Transfert, Sortie).
+  - Gestion des statuts de lits (`BedStatus`) et des tableaux de bord (`getBedBoard`).
+  - Suite de tests unitaires et d'intégration.
+
+- **DPI Service (Module II - Dossier Patient Informatisé)**
+  - Implémentation de l'entité `ClinicalEncounter` pour le suivi des dossiers cliniques.
+  - Gestion des constantes vitales (`VitalSign`) avec calcul automatique de l'IMC.
+  - Gestion des prescriptions médicamenteuses CPOE (`MedicationOrder`).
+  - Gestion des demandes d'examens complémentaires et saisie des résultats (`LabOrder`).
+  - Suite de tests unitaires et d'intégration couvrant le cycle clinique complet.
+
+- **Configuration Globale**
+  - Ajout du profil `mock` pour l'exécution locale avec données de test (`DataInitializer`).
+  - Configuration de la sécurité permissive pour les environnements de développement.
+  - Gestion centralisée des exceptions (`GlobalExceptionHandler`).
+  - Mise à jour du `pom.xml` parent pour forcer l'utilisation de JUnit 5.12.2 et résoudre les conflits avec Spring Boot 3.5.
+  - Configuration du plugin `maven-surefire-plugin` pour inclure l'exécution automatique des tests d'intégration (`*IT.java`).
+
+### Changed
 - Architecture initiale du monorepo polyglotte
 - Configuration Maven parent pour services Java
 - Configuration pnpm workspaces pour services Node.js
