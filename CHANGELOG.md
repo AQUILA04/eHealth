@@ -38,6 +38,11 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Mise à jour du `pom.xml` parent pour forcer l'utilisation de JUnit 5.12.2 et résoudre les conflits avec Spring Boot 3.5.
   - Configuration du plugin `maven-surefire-plugin` pour inclure l'exécution automatique des tests d'intégration (`*IT.java`).
 
+### Fixed
+- Mise à niveau du pipeline CI/CD de Java 17 vers Java 21 pour aligner avec la cible de compilation du projet.
+- Suppression des services PostgreSQL et MongoDB du job de tests CI (remplacement par H2 in-memory via le profil `mock`).
+- Mise à jour de `Dockerfile.java` vers les images `eclipse-temurin:21`.
+
 ### Changed
 - Architecture initiale du monorepo polyglotte
 - Configuration Maven parent pour services Java
