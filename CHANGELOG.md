@@ -7,6 +7,22 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-01
+
+### Added
+- **Keycloak Integration (IAM)**
+  - Serveur d'autorisation RBAC avec realm `ehealth` auto-configuré (JSON import).
+  - Ajout des services `keycloak` et `keycloak-db` dans `docker-compose.dev.yml`.
+  - Configuration des rôles métiers : `MEDECIN`, `INFIRMIER`, `BIOLOGISTE`, `PHARMACIEN`, `ADMIN_GAP`, `COMPTABLE`, `PATIENT`.
+
+- **Profils de sécurité (GAP & DPI)**
+  - Profil `secure` : OAuth2 Resource Server avec validation JWT et RBAC strict par endpoint.
+  - Profil `unsecure` : Configuration permissive sans authentification pour le développement rapide.
+  - Convertisseur JWT personnalisé pour mapper les rôles Keycloak vers les `GrantedAuthority` de Spring Security.
+
+- **Tests de sécurité (RBAC)**
+  - Ajout de `GapSecurityIT` (16 tests) et `DpiSecurityIT` (11 tests) pour valider la matrice d'autorisation clinique et administrative avec des JWT mockés.
+
 ## [0.2.0] - 2026-06-30
 
 ### Added
