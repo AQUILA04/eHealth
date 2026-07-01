@@ -64,7 +64,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
 
@@ -123,30 +123,7 @@ jobs:
     name: Test Java Services
     runs-on: ubuntu-latest
     needs: build-java
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: ehealth_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      mongodb:
-        image: mongo:7
-        options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 27017:27017
-
+    # Tests use H2 in-memory database (mock profile) — no external services needed
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -154,17 +131,12 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
 
-      - name: Run Java tests
-        run: mvn test
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ehealth_test
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
-          SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/ehealth_test
+      - name: Run Java tests (mock profile — H2 in-memory)
+        run: mvn test -Dspring.profiles.active=mock
         continue-on-error: false
 
       - name: Upload coverage reports
