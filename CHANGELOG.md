@@ -7,6 +7,22 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-22
+
+### Added
+
+- **Frontend React** (`frontend/`) : application SPA Vite 6 + React 18 + TypeScript + TailwindCSS
+  - Design system médical avec palette `primary` (bleu clinique), `success`, `warning`, `danger`, typographie Inter + JetBrains Mono
+  - Composants UI partagés : `Button`, `Badge`, `Card`, `Input`, `Select`, `Spinner`, `Modal`, `Table`, `EmptyState`
+  - Layout `AppShell` avec sidebar de navigation, header contextuel et zone de contenu principale
+  - Intégration **Keycloak** (OIDC) avec `KeycloakProvider` et intercepteur Axios pour injection automatique du JWT Bearer
+  - Support du mode `VITE_AUTH_ENABLED=false` pour développement sans Keycloak actif
+  - **Module GAP** : pages Patients (liste + création), Admissions ADT (cycle complet admission/transfert/sortie), Tableau des lits, Rendez-vous
+  - **Module DPI** : pages Dossiers cliniques, Détail dossier (constantes vitales + CPOE + examens), Prescriptions globales, Examens de laboratoire
+  - Dashboard d'accueil avec KPIs temps réel (patients actifs, admissions, rendez-vous du jour)
+  - Proxy Vite vers les backends GAP (`:8082`), DPI (`:8083`), EMPI (`:8081`)
+  - Build de production validé : 422 kB JS (gzip: 126 kB), 0 erreur TypeScript
+
 ## [0.3.0] - 2026-07-01
 
 ### Added

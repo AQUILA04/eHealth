@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #2563eb;
+    --color-primary-dark: #1d4ed8;
+    --color-background: #f8fafc;
+    --color-card: #ffffff;
+    --color-sidebar: #0f172a;
+    --color-border: #e2e8f0;
+    --color-text: #0f172a;
+    --color-text-muted: #94a3b8;
+    --sidebar-width: 260px;
+    --header-height: 64px;
+  }
+
+  * {
+    @apply border-surface-border;
+  }
+
+  body {
+    @apply bg-surface text-text-primary font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Scrollbar personnalisée */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-surface-border-strong rounded-full;
+  }
+
+  /* Badge de statut clinique */
+  .badge-normal  { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-clinical-success-bg text-clinical-success; }
+  .badge-warning { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-clinical-warning-bg text-clinical-warning; }
+  .badge-danger  { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-clinical-danger-bg text-clinical-danger; }
+  .badge-info    { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-clinical-info-bg text-clinical-info; }
+  .badge-neutral { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600; }
+
+  /* Card médicale */
+  .card {
+    @apply bg-surface-card rounded-lg shadow-card border border-surface-border;
+  }
+  .card-hover {
+    @apply card transition-shadow duration-200 hover:shadow-card-hover cursor-pointer;
+  }
+}
+
+/* Animation de chargement */
+@keyframes shimmer {
+  0%   { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+}
