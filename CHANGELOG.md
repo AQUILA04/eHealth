@@ -7,6 +7,31 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-22
+
+### Added
+
+- **Stack Docker de développement** (`infrastructure/docker/docker-compose.dev.yml`) : démarrage complet en une commande
+  - Service `keycloak-db` : PostgreSQL 16 dédié à Keycloak avec healthcheck `pg_isready`
+  - Service `keycloak` : Keycloak 26 avec import automatique du realm `ehealth` au démarrage (`--import-realm`)
+  - Service `empi-service` : mock EMPI (profil `mock`, H2 in-memory) sur le port 8081
+  - Service `gap-service` : Module I (profil `secure`, H2 in-memory) sur le port 8082, dépendant de l'EMPI et de Keycloak
+  - Service `dpi-service` : Module II (profil `secure`, H2 in-memory) sur le port 8083, dépendant du GAP et de Keycloak
+  - Service `frontend` : application React via Nginx sur le port 3000 avec proxy inverse vers les trois backends
+  - Service `maildev` : serveur SMTP de test (SMTP 1025, UI 8025) pour capturer les emails sans envoi réel
+  - Chaîne de dépendances avec `condition: service_healthy` garantissant l'ordre de démarrage
+- **Dockerfiles multi-stage** pour chaque service Java et le frontend
+  - `services/java/empi-service/Dockerfile` : build Maven + runtime JRE 21 Alpine
+  - `services/java/gap-service/Dockerfile` : build Maven + runtime JRE 21 Alpine
+  - `services/java/dpi-service/Dockerfile` : build Maven + runtime JRE 21 Alpine
+  - `frontend/Dockerfile` : build Vite (Node 22) + Nginx 1.27 Alpine avec injection des variables `VITE_*` au build-time
+  - `frontend/nginx.conf` : configuration Nginx avec proxy inverse vers les backends, SPA fallback et cache des assets statiques
+- **Configuration inter-services externalisée** : `EMPI_SERVICE_URL` et `GAP_SERVICE_URL` configurables via variables d'environnement (valeurs par défaut `localhost` pour le développement local sans Docker)
+
+### Fixed
+
+- URLs inter-services hardcodées en `localhost` dans `application.yml` du GAP et du DPI remplacées par des placeholders `${EMPI_SERVICE_URL:...}` et `${GAP_SERVICE_URL:...}` pour compatibilité Docker
+
 ## [0.4.0] - 2026-07-22
 
 ### Added

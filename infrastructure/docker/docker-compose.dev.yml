@@ -1,364 +1,271 @@
-version: '3.9'
+# ============================================================================
+# eHealth — Docker Compose Développement
+#
+# Démarre l'ensemble de la stack en une commande depuis la racine du monorepo :
+#
+#   docker compose -f infrastructure/docker/docker-compose.dev.yml up --build
+#
+# Services inclus :
+#   keycloak-db   — PostgreSQL 16 pour Keycloak
+#   keycloak      — IAM/SSO avec import automatique du realm ehealth
+#   empi-service  — Mock EMPI (port 8081)
+#   gap-service   — Module I — Gestion Administrative du Patient (port 8082)
+#   dpi-service   — Module II — Dossier Patient Informatisé (port 8083)
+#   frontend      — Application React via Nginx (port 3000)
+#   maildev       — Serveur SMTP de test (SMTP 1025, UI 8025)
+#
+# Accès rapide après démarrage (~3 min pour le premier build) :
+#   Frontend          : http://localhost:3000
+#   Keycloak Admin    : http://localhost:8180  (admin / admin)
+#   EMPI API          : http://localhost:8081/api/v1/empi
+#   GAP  API          : http://localhost:8082/api/v1/gap
+#   DPI  API          : http://localhost:8083/api/v1/dpi
+#   EMPI H2 Console   : http://localhost:8081/h2-console
+#   GAP  H2 Console   : http://localhost:8082/h2-console  (profil mock uniquement)
+#   DPI  H2 Console   : http://localhost:8083/h2-console  (profil mock uniquement)
+#   MailDev UI        : http://localhost:8025
+#
+# Comptes de test Keycloak (mot de passe : Password1!) :
+#   dr.dupont         — rôle MEDECIN
+#   inf.martin        — rôle INFIRMIER
+#   admin.gap         — rôle ADMIN_GAP
+#   biologiste.petit  — rôle BIOLOGISTE
+#   pharmacien.durand — rôle PHARMACIEN
+#   admin.system      — tous les rôles
+#
+# Pour démarrer uniquement les services backend sans le frontend :
+#   docker compose -f infrastructure/docker/docker-compose.dev.yml up --build \
+#     keycloak empi-service gap-service dpi-service
+# ============================================================================
 
 services:
-  # ============================================================================
-  # Databases
-  # ============================================================================
-  postgres:
-    image: postgres:16-alpine
-    container_name: ehealth-postgres
-    environment:
-      POSTGRES_USER: ehealth
-      POSTGRES_PASSWORD: ehealth_dev_password
-      POSTGRES_DB: ehealth_dev
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ehealth"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ehealth-network
 
-  mongodb:
-    image: mongo:7.0-alpine
-    container_name: ehealth-mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ehealth
-      MONGO_INITDB_ROOT_PASSWORD: ehealth_dev_password
-      MONGO_INITDB_DATABASE: ehealth_dev
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ehealth-network
-
-  # ============================================================================
-  # Message Brokers - Artemis (Transactions Critiques)
-  # ============================================================================
-  artemis:
-    image: quay.io/artemiscloud/activemq-artemis:latest
-    container_name: ehealth-artemis
-    environment:
-      ARTEMIS_USER: ehealth
-      ARTEMIS_PASSWORD: ehealth_dev_password
-      ARTEMIS_MIN_MEMORY: 256M
-      ARTEMIS_MAX_MEMORY: 512M
-    ports:
-      - "61616:61616"  # OpenWire protocol (Java clients)
-      - "5672:5672"    # AMQP protocol
-      - "61613:61613"  # STOMP protocol
-      - "8161:8161"    # Management UI (http://localhost:8161)
-    volumes:
-      - artemis_data:/var/lib/artemis-instance
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8161/admin/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ehealth-network
-
-  # ============================================================================
-  # Message Brokers - Kafka (Audit Trail & Replay)
-  # ============================================================================
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: ehealth-zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-      ZOOKEEPER_SYNC_LIMIT: 5
-      ZOOKEEPER_INIT_LIMIT: 10
-    ports:
-      - "2181:2181"
-    volumes:
-      - zookeeper_data:/var/lib/zookeeper/data
-      - zookeeper_logs:/var/lib/zookeeper/log
-    healthcheck:
-      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ehealth-network
-
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    container_name: ehealth-kafka
-    depends_on:
-      zookeeper:
-        condition: service_healthy
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_LOG_RETENTION_HOURS: 720  # 30 jours pour audit trail
-      KAFKA_LOG_SEGMENT_BYTES: 1073741824  # 1GB segments
-      KAFKA_COMPRESSION_TYPE: snappy
-      KAFKA_MIN_INSYNC_REPLICAS: 1
-    ports:
-      - "9092:9092"
-    volumes:
-      - kafka_data:/var/lib/kafka/data
-    healthcheck:
-      test: ["CMD", "kafka-broker-api-versions.sh", "--bootstrap-server", "localhost:9092"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ehealth-network
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: ehealth-kafka-ui
-    depends_on:
-      kafka:
-        condition: service_healthy
-    environment:
-      KAFKA_CLUSTERS_0_NAME: ehealth
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
-    ports:
-      - "8080:8080"
-    networks:
-      - ehealth-network
-
-  # ============================================================================
-  # Cache
-  # ============================================================================
-  redis:
-    image: redis:7-alpine
-    container_name: ehealth-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ehealth-network
-
-  # ============================================================================
-  # Identity & Access Management — Keycloak
-  # ============================================================================
+  # ──────────────────────────────────────────────────────────────────────────
+  # Base de données Keycloak
+  # ──────────────────────────────────────────────────────────────────────────
   keycloak-db:
     image: postgres:16-alpine
     container_name: ehealth-keycloak-db
     environment:
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: keycloak_dev_password
       POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_secret
     volumes:
       - keycloak_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
+    restart: unless-stopped
     networks:
       - ehealth-network
 
+  # ──────────────────────────────────────────────────────────────────────────
+  # Keycloak 26 — IAM / SSO
+  # Le realm ehealth est importé automatiquement depuis infrastructure/keycloak/realms/
+  # au premier démarrage du container (volume monté en lecture seule).
+  # ──────────────────────────────────────────────────────────────────────────
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0
+    image: quay.io/keycloak/keycloak:26.0
     container_name: ehealth-keycloak
-    command:
-      - start-dev
-      - --import-realm
+    command: start-dev --import-realm
     environment:
-      # Admin credentials
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      # Database
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
       KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloak_dev_password
-      # Network
+      KC_DB_PASSWORD: keycloak_secret
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8180
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
-      KC_HTTP_PORT: 8180
-      KC_PROXY: edge
-      # Features
-      KC_FEATURES: token-exchange,admin-fine-grained-authz
-      # Logging
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
       KC_LOG_LEVEL: INFO
+    volumes:
+      - ../keycloak/realms:/opt/keycloak/data/import:ro
     ports:
       - "8180:8180"
-    volumes:
-      # Le realm JSON est importé automatiquement au premier démarrage
-      - ../../infrastructure/keycloak/realms:/opt/keycloak/data/import:ro
     depends_on:
       keycloak-db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8180/health/ready || exit 1"]
-      interval: 15s
+      test: ["CMD-SHELL", "curl -sf http://localhost:8180/health/ready || exit 1"]
+      interval: 20s
       timeout: 10s
       retries: 10
-      start_period: 60s
+      start_period: 90s
+    restart: unless-stopped
     networks:
       - ehealth-network
 
-  # ============================================================================
-  # Mail Server (for testing)
-  # ============================================================================
-  maildev:
-    image: maildev/maildev:latest
-    container_name: ehealth-maildev
-    ports:
-      - "1080:1080"  # Web UI
-      - "1025:1025"  # SMTP
-    networks:
-      - ehealth-network
-
-  # ============================================================================
-  # Monitoring & Logging
-  # ============================================================================
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: ehealth-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=30d'
-    networks:
-      - ehealth-network
-    depends_on:
-      - artemis
-      - kafka
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: ehealth-grafana
-    ports:
-      - "3000:3000"
+  # ──────────────────────────────────────────────────────────────────────────
+  # EMPI Service — Mock EMPI (H2 in-memory, profil mock)
+  # Pas de dépendance à Keycloak : l'EMPI est un service interne non exposé
+  # aux utilisateurs finaux, il n'a pas de sécurité OAuth2 en dev.
+  # ──────────────────────────────────────────────────────────────────────────
+  empi-service:
+    build:
+      context: ../..
+      dockerfile: services/java/empi-service/Dockerfile
+    container_name: ehealth-empi
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
-      GF_USERS_ALLOW_SIGN_UP: false
-      GF_INSTALL_PLUGINS: grafana-piechart-panel
-    volumes:
-      - grafana_data:/var/lib/grafana
-    networks:
-      - ehealth-network
-    depends_on:
-      - prometheus
-
-  # ============================================================================
-  # Logging - ELK Stack
-  # ============================================================================
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
-    container_name: ehealth-elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ehealth-network
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.10.0
-    container_name: ehealth-kibana
-    ports:
-      - "5601:5601"
-    environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-    networks:
-      - ehealth-network
-    depends_on:
-      - elasticsearch
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.10.0
-    container_name: ehealth-logstash
-    ports:
-      - "5000:5000/tcp"
-      - "5000:5000/udp"
-    environment:
-      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
-    volumes:
-      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-    networks:
-      - ehealth-network
-    depends_on:
-      - elasticsearch
-
-  # ============================================================================
-  # Schema Registry (pour Kafka - Optionnel mais recommandé)
-  # ============================================================================
-  schema-registry:
-    image: confluentinc/cp-schema-registry:7.5.0
-    container_name: ehealth-schema-registry
-    depends_on:
-      kafka:
-        condition: service_healthy
-    environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
-      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-      SCHEMA_REGISTRY_DEBUG: "true"
+      SPRING_PROFILES_ACTIVE: mock
+      SERVER_PORT: 8081
+      LOGGING_FILE_PATH: /app/logs
+      EMPI_MATCHING_SIMILARITY_THRESHOLD: "0.85"
     ports:
       - "8081:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
     networks:
       - ehealth-network
 
+  # ──────────────────────────────────────────────────────────────────────────
+  # GAP Service — Module I (H2 in-memory, profil secure)
+  # Dépend de l'EMPI pour la déduplication des identités patients,
+  # et de Keycloak pour la validation des JWT Bearer.
+  # ──────────────────────────────────────────────────────────────────────────
+  gap-service:
+    build:
+      context: ../..
+      dockerfile: services/java/gap-service/Dockerfile
+    container_name: ehealth-gap
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8082
+      LOGGING_FILE_PATH: /app/logs
+      # URL EMPI interne (résolution Docker DNS)
+      EMPI_SERVICE_URL: http://empi-service:8081
+      # Keycloak — Resource Server JWT
+      KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/ehealth
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    ports:
+      - "8082:8082"
+    depends_on:
+      empi-service:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8082/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # DPI Service — Module II (H2 in-memory, profil secure)
+  # Dépend du GAP pour valider les admissions avant l'ouverture d'un dossier
+  # clinique, et de Keycloak pour la validation des JWT Bearer.
+  # ──────────────────────────────────────────────────────────────────────────
+  dpi-service:
+    build:
+      context: ../..
+      dockerfile: services/java/dpi-service/Dockerfile
+    container_name: ehealth-dpi
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8083
+      LOGGING_FILE_PATH: /app/logs
+      # URL GAP interne
+      GAP_SERVICE_URL: http://gap-service:8082
+      # Keycloak — Resource Server JWT
+      KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/ehealth
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    ports:
+      - "8083:8083"
+    depends_on:
+      gap-service:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8083/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Frontend React — Nginx avec proxy inverse vers les backends
+  # Les variables VITE_* sont injectées au moment du build Docker (build-time).
+  # Nginx proxifie /api/v1/empi → empi-service:8081
+  #                /api/v1/gap  → gap-service:8082
+  #                /api/v1/dpi  → dpi-service:8083
+  # ──────────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_AUTH_ENABLED: "true"
+        VITE_KEYCLOAK_URL: http://localhost:8180
+        VITE_KEYCLOAK_REALM: ehealth
+        VITE_KEYCLOAK_CLIENT_ID: ehealth-frontend
+        VITE_GAP_API_URL: /api/v1/gap
+        VITE_DPI_API_URL: /api/v1/dpi
+        VITE_EMPI_API_URL: /api/v1/empi
+    container_name: ehealth-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      empi-service:
+        condition: service_healthy
+      gap-service:
+        condition: service_healthy
+      dpi-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/health || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # MailDev — Serveur SMTP de test
+  # Capture tous les emails sortants sans les envoyer réellement.
+  # SMTP : localhost:1025  |  Interface web : http://localhost:8025
+  # ──────────────────────────────────────────────────────────────────────────
+  maildev:
+    image: maildev/maildev:2.1.0
+    container_name: ehealth-maildev
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:1080"   # Interface web
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+# ============================================================================
+# Volumes persistants
+# ============================================================================
 volumes:
-  postgres_data:
-    driver: local
   keycloak_db_data:
     driver: local
-  mongodb_data:
-    driver: local
-  artemis_data:
-    driver: local
-  redis_data:
-    driver: local
-  prometheus_data:
-    driver: local
-  grafana_data:
-    driver: local
-  elasticsearch_data:
-    driver: local
-  zookeeper_data:
-    driver: local
-  zookeeper_logs:
-    driver: local
-  kafka_data:
-    driver: local
 
+# ============================================================================
+# Réseau interne partagé entre tous les services
+# ============================================================================
 networks:
   ehealth-network:
     driver: bridge
+    name: ehealth-dev-network

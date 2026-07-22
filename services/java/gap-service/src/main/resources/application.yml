@@ -44,6 +44,7 @@ logging:
     org.springframework.web: INFO
 
 # URL du mock EMPI — utilisé par le client REST interne
+# Surcharge via variable d'environnement EMPI_SERVICE_URL en Docker
 empi:
   service:
-    url: http://localhost:8081
+    url: ${EMPI_SERVICE_URL:http://localhost:8081}

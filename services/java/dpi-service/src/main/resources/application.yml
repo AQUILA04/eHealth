@@ -44,6 +44,7 @@ logging:
     org.springframework.web: INFO
 
 # Référence vers le GAP service
+# Surcharge via variable d'environnement GAP_SERVICE_URL en Docker
 gap:
   service:
-    url: http://localhost:8082
+    url: ${GAP_SERVICE_URL:http://localhost:8082}
