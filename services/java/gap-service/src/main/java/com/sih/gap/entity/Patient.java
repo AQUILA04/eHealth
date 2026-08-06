@@ -25,7 +25,7 @@ import java.util.List;
     name = "patient",
     indexes = {
         @Index(name = "idx_patient_empi_uuid", columnList = "empiGlobalUuid"),
-        @Index(name = "idx_patient_local_mrn", columnList = "localMrn", unique = true)
+        @Index(name = "idx_patient_local_mrn", columnList = "tenantId, localMrn", unique = true)
     }
 )
 @Getter
@@ -39,6 +39,9 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 50)
+    private String tenantId;
+
     /**
      * UUID global de l'EMPI — clé de liaison avec l'index maître patient.
      * Peut être null si le patient n'a pas encore été synchronisé avec l'EMPI.
@@ -47,7 +50,7 @@ public class Patient {
     private String empiGlobalUuid;
 
     /** Numéro de dossier médical local à l'établissement. */
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String localMrn;
 
     // ─── Données démographiques (cache local de l'EMPI) ──────────────────────
@@ -147,6 +150,9 @@ public class Patient {
 
     @PrePersist
     public void prePersist() {
+        if (this.tenantId == null) {
+            this.tenantId = com.sih.shared.tenant.TenantContext.getCurrentTenant();
+        }
         if (this.localMrn == null) {
             this.localMrn = "GAP-" + LocalDate.now().toString().replace("-", "")
                             + "-" + String.format("%05d", (long)(Math.random() * 99999));

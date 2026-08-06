@@ -25,7 +25,8 @@ import java.util.List;
     indexes = {
         @Index(name = "idx_ce_gap_encounter", columnList = "gapEncounterId"),
         @Index(name = "idx_ce_patient_ref", columnList = "patientRef"),
-        @Index(name = "idx_ce_status", columnList = "status")
+        @Index(name = "idx_ce_status", columnList = "status"),
+        @Index(name = "idx_ce_tenant", columnList = "tenantId")
     }
 )
 @Getter
@@ -38,6 +39,9 @@ public class ClinicalEncounter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String tenantId;
 
     /**
      * Référence vers l'Encounter administratif du GAP service.
@@ -163,5 +167,12 @@ public class ClinicalEncounter {
 
     public enum EncounterStatus {
         IN_PROGRESS, ON_HOLD, FINISHED, CANCELLED
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.tenantId == null) {
+            this.tenantId = com.sih.shared.tenant.TenantContext.getCurrentTenant();
+        }
     }
 }

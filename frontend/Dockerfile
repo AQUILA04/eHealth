@@ -6,6 +6,9 @@
 
 # ── Stage 1 : Build Vite ─────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
+RUN apk add --no-cache ca-certificates
+COPY --from=certs ZscalerRootCA.pem /usr/local/share/ca-certificates/ZscalerRootCA.crt
+RUN update-ca-certificates
 WORKDIR /app
 
 # Copier les manifestes de dépendances
@@ -37,6 +40,9 @@ RUN npm run build
 
 # ── Stage 2 : Nginx ──────────────────────────────────────────────────────────
 FROM nginx:1.27-alpine
+RUN apk add --no-cache ca-certificates
+COPY --from=certs ZscalerRootCA.pem /usr/local/share/ca-certificates/ZscalerRootCA.crt
+RUN update-ca-certificates
 
 # Copier la config Nginx personnalisée
 COPY nginx.conf /etc/nginx/conf.d/default.conf

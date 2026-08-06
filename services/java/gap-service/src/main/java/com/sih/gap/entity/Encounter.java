@@ -24,7 +24,8 @@ import java.time.LocalDateTime;
         @Index(name = "idx_enc_patient", columnList = "patient_id"),
         @Index(name = "idx_enc_status", columnList = "status"),
         @Index(name = "idx_enc_type", columnList = "encounterType"),
-        @Index(name = "idx_enc_admission_date", columnList = "admissionDate")
+        @Index(name = "idx_enc_admission_date", columnList = "admissionDate"),
+        @Index(name = "idx_enc_tenant", columnList = "tenantId")
     }
 )
 @Getter
@@ -37,6 +38,9 @@ public class Encounter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
@@ -147,5 +151,12 @@ public class Encounter {
 
     public enum DischargeDisposition {
         HOME, TRANSFER_INTERNAL, TRANSFER_EXTERNAL, DECEASED, LEFT_AMA, LONG_TERM_CARE
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.tenantId == null) {
+            this.tenantId = com.sih.shared.tenant.TenantContext.getCurrentTenant();
+        }
     }
 }

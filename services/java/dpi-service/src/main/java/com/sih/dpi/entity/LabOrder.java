@@ -20,7 +20,8 @@ import java.time.LocalDateTime;
     indexes = {
         @Index(name = "idx_lo_encounter", columnList = "clinical_encounter_id"),
         @Index(name = "idx_lo_status", columnList = "status"),
-        @Index(name = "idx_lo_type", columnList = "orderType")
+        @Index(name = "idx_lo_type", columnList = "orderType"),
+        @Index(name = "idx_lo_tenant", columnList = "tenantId")
     }
 )
 @Getter
@@ -33,6 +34,9 @@ public class LabOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clinical_encounter_id", nullable = false)
@@ -128,5 +132,12 @@ public class LabOrder {
 
     public enum ResultInterpretation {
         NORMAL, LOW, HIGH, CRITICAL_LOW, CRITICAL_HIGH, ABNORMAL
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.tenantId == null) {
+            this.tenantId = com.sih.shared.tenant.TenantContext.getCurrentTenant();
+        }
     }
 }

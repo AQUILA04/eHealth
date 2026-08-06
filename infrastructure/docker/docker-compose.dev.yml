@@ -111,6 +111,8 @@ services:
     build:
       context: ../..
       dockerfile: services/java/empi-service/Dockerfile
+      additional_contexts:
+        certs: ./cert
     container_name: ehealth-empi
     environment:
       SPRING_PROFILES_ACTIVE: mock
@@ -138,6 +140,8 @@ services:
     build:
       context: ../..
       dockerfile: services/java/gap-service/Dockerfile
+      additional_contexts:
+        certs: ./cert
     container_name: ehealth-gap
     environment:
       SPRING_PROFILES_ACTIVE: secure
@@ -174,6 +178,8 @@ services:
     build:
       context: ../..
       dockerfile: services/java/dpi-service/Dockerfile
+      additional_contexts:
+        certs: ./cert
     container_name: ehealth-dpi
     environment:
       SPRING_PROFILES_ACTIVE: secure
@@ -212,6 +218,8 @@ services:
     build:
       context: ../../frontend
       dockerfile: Dockerfile
+      additional_contexts:
+        certs: ./cert
       args:
         VITE_AUTH_ENABLED: "true"
         VITE_KEYCLOAK_URL: http://localhost:8180

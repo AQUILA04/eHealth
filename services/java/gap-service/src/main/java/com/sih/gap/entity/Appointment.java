@@ -21,7 +21,8 @@ import java.time.LocalDateTime;
     indexes = {
         @Index(name = "idx_appt_patient", columnList = "patient_id"),
         @Index(name = "idx_appt_scheduled_time", columnList = "scheduledTime"),
-        @Index(name = "idx_appt_status", columnList = "status")
+        @Index(name = "idx_appt_status", columnList = "status"),
+        @Index(name = "idx_appt_tenant", columnList = "tenantId")
     }
 )
 @Getter
@@ -34,6 +35,9 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
@@ -112,5 +116,12 @@ public class Appointment {
         CANCELLED,
         /** Patient absent (no-show). */
         NO_SHOW
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.tenantId == null) {
+            this.tenantId = com.sih.shared.tenant.TenantContext.getCurrentTenant();
+        }
     }
 }

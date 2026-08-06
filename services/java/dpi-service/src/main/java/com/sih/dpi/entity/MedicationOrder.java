@@ -19,7 +19,8 @@ import java.time.LocalDateTime;
     name = "medication_order",
     indexes = {
         @Index(name = "idx_mo_encounter", columnList = "clinical_encounter_id"),
-        @Index(name = "idx_mo_status", columnList = "status")
+        @Index(name = "idx_mo_status", columnList = "status"),
+        @Index(name = "idx_mo_tenant", columnList = "tenantId")
     }
 )
 @Getter
@@ -32,6 +33,9 @@ public class MedicationOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clinical_encounter_id", nullable = false)
@@ -125,5 +129,12 @@ public class MedicationOrder {
         CANCELLED,
         /** Suspendu temporairement. */
         SUSPENDED
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.tenantId == null) {
+            this.tenantId = com.sih.shared.tenant.TenantContext.getCurrentTenant();
+        }
     }
 }

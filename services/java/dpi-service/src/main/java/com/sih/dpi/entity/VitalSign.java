@@ -18,7 +18,8 @@ import java.time.LocalDateTime;
     name = "vital_sign",
     indexes = {
         @Index(name = "idx_vs_encounter", columnList = "clinical_encounter_id"),
-        @Index(name = "idx_vs_recorded_at", columnList = "recordedAt")
+        @Index(name = "idx_vs_recorded_at", columnList = "recordedAt"),
+        @Index(name = "idx_vs_tenant", columnList = "tenantId")
     }
 )
 @Getter
@@ -31,6 +32,9 @@ public class VitalSign {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clinical_encounter_id", nullable = false)
@@ -99,6 +103,9 @@ public class VitalSign {
     @PrePersist
     @PreUpdate
     public void computeBmi() {
+        if (this.tenantId == null) {
+            this.tenantId = com.sih.shared.tenant.TenantContext.getCurrentTenant();
+        }
         if (weightKg != null && heightCm != null && heightCm.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal heightM = heightCm.divide(new BigDecimal("100"), 4, java.math.RoundingMode.HALF_UP);
             this.bmi = weightKg.divide(heightM.multiply(heightM), 1, java.math.RoundingMode.HALF_UP);

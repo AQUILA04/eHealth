@@ -6,6 +6,8 @@
 
 # ── Stage 1 : Build Maven ────────────────────────────────────────────────────
 FROM maven:3.9-eclipse-temurin-21 AS builder
+COPY --from=certs ZscalerRootCA.pem /usr/local/share/ca-certificates/ZscalerRootCA.crt
+RUN update-ca-certificates
 WORKDIR /build
 
 COPY pom.xml ./pom.xml
@@ -19,7 +21,9 @@ RUN mvn -pl services/java/dpi-service -am clean package -DskipTests -B -q
 
 # ── Stage 2 : Runtime JRE ────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-alpine
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl ca-certificates
+COPY --from=certs ZscalerRootCA.pem /usr/local/share/ca-certificates/ZscalerRootCA.crt
+RUN update-ca-certificates
 
 RUN addgroup -g 1001 -S appgroup && adduser -u 1001 -S appuser -G appgroup
 WORKDIR /app

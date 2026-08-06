@@ -18,6 +18,7 @@ L'architecture suit une approche **Microservices** stricte, facilitant la mainte
 | Date | Version | Description | Auteur |
 | :--- | :--- | :--- | :--- |
 | 2025-05-20 | 1.0.0 | Initialisation de l'architecture (Hub & Spoke, EMPI Hybride) | Winston (Architecte) |
+| 2026-08-06 | 1.1.0 | Évolution Multi-Tenant SaaS pour les modules Spoke (GAP, DPI) | Antigravity |
 
 ---
 
@@ -233,3 +234,25 @@ interface ClinicalEncounter {
 4.  **Types First :** Tout développement commence par la définition des interfaces (TypeScript) ou des contrats (Protobuf).
 
 ---
+
+## **9. Évolution SaaS & Architecture Multi-Tenant**
+
+Pour permettre un déploiement SaaS unifié où différents centres hospitaliers (tenants) peuvent s'enregistrer et travailler en toute isolation, le système a évolué vers un modèle multi-tenant partagé au niveau base de données.
+
+### **Stratégie d'Isolation des Données**
+Le système adopte une approche **Base de données partagée, Schéma partagé (Shared Database, Shared Schema)** isolée au niveau applicatif et base de données :
+*   **PostgreSQL Row-Level Security (RLS) :** La sécurité au niveau des lignes est appliquée nativement sur les tables contenant des données sensibles de santé dans les modules Spoke (GAP et DPI).
+*   **Dynamic Session Binding :** Toutes les requêtes SQL sont interceptées dynamiquement pour lier la session de connexion à l'identifiant du tenant courant via la variable système `app.current_tenant`.
+
+### **Routage et Validation Gateway**
+*   **Extraction :** L'API Gateway locale décode le token JWT et extrait le claim `tenant_id`.
+*   **Vérification de Statut :** La Gateway interroge le service central d'administration `tenant-service` pour vérifier si le statut du tenant est actif (avec un cache local pour optimiser les performances).
+*   **Header Propagation :** L'identifiant est propagé de manière transparente aux microservices en aval via le header HTTP `X-Tenant-ID`.
+
+### **Bibliothèque Partagée (`shared-tenant-lib`)**
+Pour éviter la duplication de logique, la bibliothèque transverse Spring Boot :
+1.  Extrait `X-Tenant-ID` via un filtre HTTP global (`TenantFilter`) et peuple un `ThreadLocal` (`TenantContext`).
+2.  Intercepte les connexions à la source de données via un routeur personnalisé (`TenantRoutingDataSource`) et exécute automatiquement la commande de contexte de session (`SET app.current_tenant` pour PostgreSQL en production et `SET @app_current_tenant` pour H2 lors du développement local ou des tests d'intégration).
+
+---
+
