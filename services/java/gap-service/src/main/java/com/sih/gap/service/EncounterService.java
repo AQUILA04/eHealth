@@ -34,11 +34,14 @@ public class EncounterService {
 
     private final EncounterRepository encounterRepository;
     private final PatientRepository patientRepository;
+    private final com.sih.gap.client.QuotaClient quotaClient;
 
     // ─── Admission ────────────────────────────────────────────────────────────
 
     @Transactional
     public EncounterResponse admit(EncounterRequest request) {
+        quotaClient.assertAndRecordUsage("encounters.create");
+
         Patient patient = patientRepository.findById(request.getPatientId())
             .orElseThrow(() -> new EntityNotFoundException(
                 "Patient introuvable avec l'id: " + request.getPatientId()));
@@ -54,7 +57,7 @@ public class EncounterService {
             .ward(request.getWard())
             .room(request.getRoom())
             .bedNumber(request.getBedNumber())
-            .bedStatus(BedStatus.OCCUPIED)
+            .bedStatus(request.getEncounterType() == Encounter.EncounterType.INPATIENT ? BedStatus.OCCUPIED : null)
             .attendingPhysicianName(request.getAttendingPhysicianName())
             .attendingPhysicianId(request.getAttendingPhysicianId())
             .financialCoverage(request.getFinancialCoverage() != null
@@ -118,6 +121,7 @@ public class EncounterService {
     /** Tableau de bord des lits — tous les patients actuellement hospitalisés. */
     public List<EncounterResponse> getBedBoard() {
         return encounterRepository.findByStatus(EncounterStatus.IN_PROGRESS).stream()
+            .filter(e -> e.getEncounterType() == Encounter.EncounterType.INPATIENT)
             .map(this::toResponse)
             .collect(Collectors.toList());
     }

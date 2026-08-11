@@ -37,7 +37,12 @@ export class AppController {
       targetBaseUrl = this.DPI_URL;
     } else if (path.startsWith('/api/v1/empi/')) {
       targetBaseUrl = this.EMPI_URL;
-    } else if (path.startsWith('/api/v1/tenants')) {
+    } else if (
+      path.startsWith('/api/v1/tenants') ||
+      path.startsWith('/api/v1/signup') ||
+      path.startsWith('/api/v1/subscriptions') ||
+      path.startsWith('/api/v1/internal/quota')
+    ) {
       targetBaseUrl = this.TENANT_URL;
     } else {
       this.logger.warn(`Unknown route: ${path}`);
@@ -59,7 +64,10 @@ export class AppController {
     }
 
     // If client is hitting clinical endpoints (GAP or DPI), validate tenant
-    if ((path.startsWith('/api/v1/gap/') || path.startsWith('/api/v1/dpi/')) && !path.includes('/actuator/')) {
+    if (
+      (path.startsWith('/api/v1/gap/') || path.startsWith('/api/v1/dpi/')) &&
+      !path.includes('/actuator/')
+    ) {
       if (!tenantId) {
         this.logger.warn('Access denied: Tenant ID missing in access token');
         return res.status(HttpStatus.UNAUTHORIZED).json({

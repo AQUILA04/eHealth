@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eHealth — Système d’information hospitalier intégré</title>
+    <meta
+      name="description"
+      content="eHealth unifie l’identité patient, les admissions et le dossier clinique pour des établissements qui soignent mieux, plus vite, en toute confiance."
+    />
+    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://ehealth.optimizesolux.com/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="eHealth" />
+    <meta property="og:url" content="https://ehealth.optimizesolux.com/" />
+    <meta
+      property="og:title"
+      content="eHealth — Système d’information hospitalier intégré"
+    />
+    <meta
+      property="og:description"
+      content="Une information nette pour chaque patient — de l’admission au dossier clinique."
+    />
+    <meta
+      property="og:image"
+      content="https://ehealth.optimizesolux.com/assets/og-cover.svg"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="eHealth — Système d’information hospitalier intégré"
+    />
+    <meta
+      name="twitter:description"
+      content="Identité patient, admissions et dossier clinique dans une plateforme claire et sécurisée."
+    />
+
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "eHealth",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Web",
+        "url": "https://ehealth.optimizesolux.com/",
+        "description": "Système d’information hospitalier intégré : identité patient, gestion administrative et dossier clinique.",
+        "provider": {
+          "@type": "Organization",
+          "name": "OptimizeSolux",
+          "url": "https://www.optimizesolux.com/"
+        },
+        "offers": {
+          "@type": "Offer",
+          "availability": "https://schema.org/OnlineOnly",
+          "priceCurrency": "EUR",
+          "description": "Essai gratuit disponible"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="lumen" aria-hidden="true"></div>
+    <div class="grid-veil" aria-hidden="true"></div>
+
+    <header class="site-header" id="header">
+      <div class="shell header-inner">
+        <a class="brand" href="/" aria-label="eHealth — accueil">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 36 36" width="30" height="30" fill="none">
+              <rect
+                x="1.5"
+                y="1.5"
+                width="33"
+                height="33"
+                rx="9"
+                stroke="currentColor"
+                stroke-width="1.6"
+                opacity="0.35"
+              />
+              <path
+                d="M8 18h5l2.5-7 3.5 14 2.5-7H28"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="brand-text">
+            <strong>eHealth</strong>
+            <small>by OptimizeSolux</small>
+          </span>
+        </a>
+
+        <nav class="nav-desktop" aria-label="Navigation principale">
+          <a href="#produit">Produit</a>
+          <a href="#avantages">Avantages</a>
+          <a href="#parcours">Parcours</a>
+        </nav>
+
+        <div class="header-actions">
+          <a class="btn btn-ghost" id="btn-login-nav" href="/login">Se connecter</a>
+          <a class="btn btn-primary" href="/signup.html">Commencer gratuitement</a>
+          <button
+            class="nav-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+            aria-label="Ouvrir le menu"
+          >
+            <span></span><span></span>
+          </button>
+        </div>
+      </div>
+
+      <nav class="mobile-nav" id="mobile-nav" hidden aria-label="Menu mobile">
+        <a href="#produit">Produit</a>
+        <a href="#avantages">Avantages</a>
+        <a href="#parcours">Parcours</a>
+        <a id="btn-login-mobile" href="/login">Se connecter</a>
+        <a class="btn btn-primary" href="/signup.html">Commencer gratuitement</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-plane" aria-hidden="true">
+          <div class="hero-wash"></div>
+          <div class="hero-orbit"></div>
+          <svg class="pulse-line" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+              class="pulse-path"
+              d="M0 70 H180 L210 70 L240 20 L270 100 L300 70 H520 L550 70 L580 35 L610 95 L640 70 H900 L930 70 L960 45 L990 90 L1020 70 H1200"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+
+        <div class="shell hero-copy">
+          <p class="brand-signal reveal">eHealth</p>
+          <h1 id="hero-title" class="reveal delay-1">
+            Le soin commence<br />par une information nette.
+          </h1>
+          <p class="hero-lead reveal delay-2">
+            eHealth relie l’identité patient, les admissions et le dossier
+            clinique — pour des équipes plus sereines et un parcours sans
+            rupture.
+          </p>
+          <div class="hero-cta reveal delay-3">
+            <a class="btn btn-primary btn-lg" href="/signup.html"
+              >Commencer gratuitement</a
+            >
+            <a class="btn btn-quiet btn-lg" id="btn-login-hero" href="/login"
+              >Se connecter</a
+            >
+          </div>
+          <p class="hero-note reveal delay-4">
+            Déjà équipé&nbsp;? Connectez-vous pour accéder à votre espace.
+          </p>
+        </div>
+
+        <div class="hero-stage reveal delay-4" aria-hidden="true">
+          <div class="stage-frame">
+            <div class="stage-top">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="stage-label">Vue clinique · temps réel</span>
+            </div>
+            <div class="stage-body">
+              <aside class="stage-rail">
+                <div class="rail-item is-active"></div>
+                <div class="rail-item"></div>
+                <div class="rail-item"></div>
+                <div class="rail-item"></div>
+              </aside>
+              <div class="stage-main">
+                <div class="vitals">
+                  <div class="vital">
+                    <span>FC</span>
+                    <strong>72</strong>
+                    <small>bpm</small>
+                  </div>
+                  <div class="vital">
+                    <span>SpO₂</span>
+                    <strong>98</strong>
+                    <small>%</small>
+                  </div>
+                  <div class="vital">
+                    <span>TA</span>
+                    <strong>118/76</strong>
+                    <small>mmHg</small>
+                  </div>
+                </div>
+                <div class="chart-band">
+                  <svg viewBox="0 0 560 90" preserveAspectRatio="none">
+                    <path
+                      class="live-trace"
+                      d="M0 50 C40 50 50 20 80 20 S120 80 160 55 S200 30 240 48 S280 70 320 40 S360 20 400 50 S440 75 480 45 S520 25 560 40"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                  </svg>
+                </div>
+                <div class="stage-rows">
+                  <div class="row"><i></i><i></i><i></i></div>
+                  <div class="row"><i></i><i></i><i></i></div>
+                  <div class="row"><i></i><i></i><i></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-strip" aria-label="Indicateurs d’impact">
+        <div class="shell stats-grid reveal-stagger">
+          <div>
+            <strong>1</strong>
+            <span>identité patient unique</span>
+          </div>
+          <div>
+            <strong>0</strong>
+            <span>rupture entre services</span>
+          </div>
+          <div>
+            <strong>24/7</strong>
+            <span>visibilité des lits &amp; flux</span>
+          </div>
+          <div>
+            <strong>100%</strong>
+            <span>traçabilité des accès</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section modules" id="produit" aria-labelledby="produit-title">
+        <div class="shell">
+          <header class="section-head reveal">
+            <h2 id="produit-title">Tout ce dont l’hôpital a besoin, au même endroit</h2>
+            <p>
+              Une plateforme pensée pour le terrain : accueil, services de
+              soins et direction — avec une information qui suit le patient.
+            </p>
+          </header>
+
+          <div class="feature-grid reveal-stagger">
+            <article>
+              <h3>Identité patient fiable</h3>
+              <p>
+                Une seule fiche, partagée entre services. Moins de doublons,
+                moins d’erreurs, plus de confiance au lit du patient.
+              </p>
+            </article>
+            <article>
+              <h3>Admissions &amp; lits maîtrisés</h3>
+              <p>
+                Admission, transfert, sortie et occupation des lits lisibles en
+                un coup d’œil — pour anticiper plutôt que subir.
+              </p>
+            </article>
+            <article>
+              <h3>Dossier clinique vivant</h3>
+              <p>
+                Observations, prescriptions et biologie structurées, prêtes
+                pour le soin et pour l’échange sécurisé.
+              </p>
+            </article>
+            <article>
+              <h3>Rendez-vous fluides</h3>
+              <p>
+                Planifiez et suivez les consultations sans spreadsheets ni
+                allers-retours entre secrétariat et services.
+              </p>
+            </article>
+            <article>
+              <h3>Équipes coordonnées</h3>
+              <p>
+                Médecins, infirmiers et administratifs travaillent sur la même
+                réalité — avec des droits adaptés à chaque rôle.
+              </p>
+            </article>
+            <article>
+              <h3>Données protégées</h3>
+              <p>
+                Accès contrôlés, historique des actions, isolation des
+                établissements : la confiance n’est pas une option.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section parcours" id="parcours" aria-labelledby="parcours-title">
+        <div class="shell">
+          <header class="section-head reveal">
+            <h2 id="parcours-title">Du seuil de l’hôpital au lit du patient</h2>
+            <p>
+              Un fil conducteur d’information — sans rupture entre le guichet,
+              le service et le dossier.
+            </p>
+          </header>
+
+          <ol class="path reveal-stagger">
+            <li>
+              <span class="path-index">01</span>
+              <h3>Accueillir</h3>
+              <p>
+                Identifiez le patient, ouvrez l’admission, attribuez un lit —
+                en quelques gestes, sans ressaisie.
+              </p>
+            </li>
+            <li>
+              <span class="path-index">02</span>
+              <h3>Soigner</h3>
+              <p>
+                Documentez le séjour : constantes, prescriptions, examens.
+                L’équipe partage la même vue clinique.
+              </p>
+            </li>
+            <li>
+              <span class="path-index">03</span>
+              <h3>Transmettre</h3>
+              <p>
+                À la sortie ou au transfert, l’essentiel du dossier voyage avec
+                le patient — clairement et en sécurité.
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section outcomes" id="avantages" aria-labelledby="outcomes-title">
+        <div class="shell outcomes-grid">
+          <div class="outcomes-copy reveal">
+            <h2 id="outcomes-title">Pourquoi les établissements choisissent eHealth</h2>
+            <p>
+              Moins de friction administrative. Plus de temps clinique. Une
+              vision unique du patient, d’un service à l’autre.
+            </p>
+          </div>
+          <ul class="benefit-list reveal-stagger">
+            <li>Réduisez les doublons et les erreurs d’identité</li>
+            <li>Accélérez admissions, transferts et sorties</li>
+            <li>Gagnez en clarté sur l’occupation des lits</li>
+            <li>Centralisez le dossier pour toute l’équipe soignante</li>
+            <li>Sécurisez les accès avec une traçabilité complète</li>
+            <li>Pilotez plusieurs sites avec la même exigence de soin</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section cta-band" aria-labelledby="cta-title">
+        <div class="shell">
+          <div class="cta-panel reveal">
+            <h2 id="cta-title">Prêt à moderniser le parcours patient&nbsp;?</h2>
+            <p>
+              Ouvrez votre espace eHealth et découvrez une information
+              hospitalière claire, du premier accueil au dossier clinique.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary btn-lg" href="/signup.html"
+                >Commencer gratuitement</a
+              >
+              <a class="btn btn-quiet btn-lg" id="btn-login-cta" href="/login"
+                >Se connecter</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-inner">
+        <div class="footer-brand">
+          <strong>eHealth</strong>
+          <span>by OptimizeSolux</span>
+        </div>
+        <div class="footer-links">
+          <a id="btn-login-footer" href="/login">Se connecter</a>
+          <a href="/signup.html">Commencer gratuitement</a>
+          <a href="mailto:ehealth@optimizesolux.com">ehealth@optimizesolux.com</a>
+          <a href="https://www.optimizesolux.com/" rel="noopener noreferrer"
+            >optimizesolux.com</a
+          >
+        </div>
+        <p class="footer-copy">
+          © <span id="year"></span> OptimizeSolux. Tous droits réservés.
+        </p>
+      </div>
+    </footer>
+
+    <script src="/js/main.js" defer></script>
+  </body>
+</html>

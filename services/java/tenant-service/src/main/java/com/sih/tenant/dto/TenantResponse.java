@@ -16,6 +16,9 @@ public class TenantResponse {
     private TenantStatus status;
     private String contactEmail;
     private String contactPhone;
+    private String planId;
+    private String planName;
+    private String subscriptionStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

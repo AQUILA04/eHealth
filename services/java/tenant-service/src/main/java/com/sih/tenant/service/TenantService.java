@@ -4,7 +4,9 @@ import com.sih.tenant.dto.TenantRequest;
 import com.sih.tenant.dto.TenantResponse;
 import com.sih.tenant.entity.Tenant;
 import com.sih.tenant.entity.TenantStatus;
+import com.sih.tenant.entity.TenantSubscription;
 import com.sih.tenant.repository.TenantRepository;
+import com.sih.tenant.repository.TenantSubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class TenantService {
 
     private final TenantRepository repository;
+    private final TenantSubscriptionRepository subscriptionRepository;
     private final KeycloakConnector keycloakConnector;
 
     @Transactional(readOnly = true)
@@ -105,6 +108,7 @@ public class TenantService {
     }
 
     private TenantResponse mapToResponse(Tenant tenant) {
+        Optional<TenantSubscription> sub = subscriptionRepository.findById(tenant.getId());
         return TenantResponse.builder()
                 .id(tenant.getId())
                 .name(tenant.getName())
@@ -112,6 +116,9 @@ public class TenantService {
                 .status(tenant.getStatus())
                 .contactEmail(tenant.getContactEmail())
                 .contactPhone(tenant.getContactPhone())
+                .planId(sub.map(TenantSubscription::getPlanId).orElse(null))
+                .planName(sub.map(s -> s.getPlan() != null ? s.getPlan().getName() : null).orElse(null))
+                .subscriptionStatus(sub.map(s -> s.getStatus().name()).orElse(null))
                 .createdAt(tenant.getCreatedAt())
                 .updatedAt(tenant.getUpdatedAt())
                 .build();

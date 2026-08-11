@@ -47,7 +47,7 @@ export function KeycloakProvider({ children }: { children: React.ReactNode }) {
 
     keycloak
       .init({
-        onLoad: 'login-required',
+        onLoad: 'check-sso',
         checkLoginIframe: false,
         pkceMethod: 'S256',
       })
@@ -55,7 +55,6 @@ export function KeycloakProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(authenticated)
         setIsLoading(false)
 
-        // Rafraîchissement automatique du token avant expiration
         const interval = setInterval(() => {
           keycloak.updateToken(60).catch(() => {
             clearInterval(interval)
@@ -94,7 +93,7 @@ export function KeycloakProvider({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
-          <p className="text-sm text-slate-500">Authentification en cours...</p>
+          <p className="text-sm text-slate-500">Chargement…</p>
         </div>
       </div>
     )

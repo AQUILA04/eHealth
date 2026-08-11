@@ -48,3 +48,10 @@ logging:
 empi:
   service:
     url: ${EMPI_SERVICE_URL:http://localhost:8081}
+
+tenant:
+  service:
+    url: ${TENANT_SERVICE_URL:http://localhost:8084}
+  internal-api-key: ${TENANT_INTERNAL_API_KEY:ehealth-internal-dev-key}
+  quota:
+    enabled: ${TENANT_QUOTA_ENABLED:true}

@@ -26,6 +26,16 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(com.sih.gap.client.QuotaClient.QuotaExceededException.class)
+    public ProblemDetail handleQuota(com.sih.gap.client.QuotaClient.QuotaExceededException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problem.setType(URI.create("https://ehealth.sih.com/errors/quota-exceeded"));
+        problem.setTitle("Quota dépassé");
+        problem.setDetail(ex.getMessage());
+        problem.setProperty("code", "QUOTA_EXCEEDED");
+        return problem;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

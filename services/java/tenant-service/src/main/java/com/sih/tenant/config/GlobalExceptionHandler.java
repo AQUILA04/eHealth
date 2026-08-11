@@ -1,6 +1,7 @@
 package com.sih.tenant.config;
 
 import com.sih.tenant.dto.Response;
+import com.sih.tenant.exception.QuotaExceededException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,24 @@ public class GlobalExceptionHandler {
                 .service(SERVICE_NAME)
                 .build();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(QuotaExceededException.class)
+    public ResponseEntity<Response<Object>> handleQuota(QuotaExceededException ex) {
+        Map<String, Object> details = new HashMap<>();
+        details.put("operation", ex.getOperation());
+        details.put("period", ex.getPeriod());
+        details.put("limit", ex.getLimit());
+        details.put("current", ex.getCurrent());
+        details.put("code", "QUOTA_EXCEEDED");
+        Response<Object> body = Response.builder()
+                .status(HttpStatus.FORBIDDEN)
+                .statusCode(HttpStatus.FORBIDDEN.value())
+                .message(ex.getMessage())
+                .service(SERVICE_NAME)
+                .data(details)
+                .build();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

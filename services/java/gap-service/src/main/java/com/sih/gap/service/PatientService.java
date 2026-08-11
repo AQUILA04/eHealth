@@ -1,9 +1,11 @@
 package com.sih.gap.service;
 
+import com.sih.gap.client.QuotaClient;
 import com.sih.gap.dto.PatientRequest;
 import com.sih.gap.dto.PatientResponse;
 import com.sih.gap.entity.Patient;
 import com.sih.gap.repository.PatientRepository;
+import com.sih.shared.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,12 +27,17 @@ import java.util.stream.Collectors;
 public class PatientService {
 
     private final PatientRepository repository;
+    private final QuotaClient quotaClient;
 
     // ─── Création ─────────────────────────────────────────────────────────────
 
     @Transactional
     public PatientResponse registerPatient(PatientRequest request) {
         log.info("GAP: Enregistrement du patient {} {}", request.getFirstName(), request.getLastName());
+
+        String tenantId = TenantContext.getCurrentTenant();
+        long current = tenantId != null ? repository.countByTenantId(tenantId) : repository.count();
+        quotaClient.assertCapacity("patients.capacity", current + 1);
 
         Patient patient = Patient.builder()
             .firstName(request.getFirstName())

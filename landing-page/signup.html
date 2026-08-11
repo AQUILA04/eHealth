@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Créer un compte — eHealth</title>
+    <meta
+      name="description"
+      content="Créez votre établissement eHealth. Commencez avec le plan Free et des fonctionnalités limitées en volume."
+    />
+    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="lumen" aria-hidden="true"></div>
+    <div class="grid-veil" aria-hidden="true"></div>
+
+    <main class="signup-page">
+      <div class="signup-shell">
+        <a class="signup-back" href="/">← Retour à eHealth</a>
+
+        <div class="signup-card">
+          <div class="signup-steps" aria-hidden="true">
+            <span class="is-on"></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <form id="signup-form" novalidate>
+            <div id="signup-step-info">
+              <h1>Créer votre établissement</h1>
+              <p class="signup-lead">
+                Quelques informations pour ouvrir votre espace eHealth et
+                commencer à piloter le parcours patient.
+              </p>
+
+              <div class="field">
+                <label for="organization">Nom de l’établissement</label>
+                <input
+                  id="organization"
+                  name="organization"
+                  type="text"
+                  autocomplete="organization"
+                  required
+                  placeholder="Clinique des Lilas"
+                />
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="admin-name">Nom de l’administrateur</label>
+                  <input
+                    id="admin-name"
+                    name="adminName"
+                    type="text"
+                    autocomplete="name"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="admin-email">Email professionnel</label>
+                  <input
+                    id="admin-email"
+                    name="adminEmail"
+                    type="email"
+                    autocomplete="email"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="button" id="signup-to-plan">
+                  Continuer
+                </button>
+              </div>
+              <p class="form-note" id="signup-note" role="status" aria-live="polite"></p>
+            </div>
+
+            <div id="signup-step-plan" hidden>
+              <h1>Choisir une offre</h1>
+              <p class="signup-lead">
+                Commencez gratuitement pour découvrir le produit, ou
+                sélectionnez une offre adaptée à la taille de votre structure.
+              </p>
+
+              <div class="plan-options">
+                <label class="plan-option">
+                  <input type="radio" name="plan" value="free" checked />
+                  <strong>Gratuit</strong>
+                  <span class="plan-price">0 €</span>
+                  <p>Idéal pour découvrir eHealth sur un premier établissement</p>
+                </label>
+                <label class="plan-option">
+                  <input type="radio" name="plan" value="clinic" />
+                  <strong>Clinic</strong>
+                  <span class="plan-price">Devis</span>
+                  <p>Pour une clinique ou un service en activité régulière</p>
+                </label>
+                <label class="plan-option">
+                  <input type="radio" name="plan" value="groupe" />
+                  <strong>Groupe</strong>
+                  <span class="plan-price">Devis</span>
+                  <p>Pour plusieurs établissements et une gouvernance partagée</p>
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-ghost" type="button" id="signup-back-info">
+                  Retour
+                </button>
+                <button class="btn btn-primary" type="submit">
+                  Créer mon espace
+                </button>
+              </div>
+              <p class="form-note" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+
+          <div id="signup-success" class="signup-success" hidden>
+            <h1>C’est parti</h1>
+            <p id="signup-summary"></p>
+            <div class="form-actions" style="justify-content: center">
+              <a class="btn btn-primary btn-lg" id="btn-login-cta" href="/login"
+                >Se connecter à mon espace</a
+              >
+              <a class="btn btn-quiet" href="/">Retour à l’accueil</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="/js/main.js" defer></script>
+  </body>
+</html>

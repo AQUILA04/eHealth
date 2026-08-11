@@ -18,6 +18,9 @@ import {
   User,
   Stethoscope,
   Building2,
+  Shield,
+  Settings,
+  ClipboardList,
 } from 'lucide-react'
 
 interface NavItem {
@@ -36,25 +39,33 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Tableau de bord',
     items: [
-      { label: 'Vue d\'ensemble', to: '/', icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: 'Vue d\'ensemble', to: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
     ],
   },
   {
     title: 'Module I — GAP',
     items: [
-      { label: 'Patients', to: '/gap/patients', icon: <Users className="h-4 w-4" /> },
-      { label: 'Admissions (ADT)', to: '/gap/encounters', icon: <BedDouble className="h-4 w-4" /> },
-      { label: 'Tableau des lits', to: '/gap/bed-board', icon: <Building2 className="h-4 w-4" /> },
-      { label: 'Rendez-vous', to: '/gap/appointments', icon: <CalendarDays className="h-4 w-4" /> },
+      { label: 'Patients', to: '/gap/patients', icon: <Users className="h-4 w-4" />, roles: ['ADMIN_GAP'] },
+      { label: 'Admissions (ADT)', to: '/gap/encounters', icon: <BedDouble className="h-4 w-4" />, roles: ['ADMIN_GAP'] },
+      { label: 'Tableau des lits', to: '/gap/bed-board', icon: <Building2 className="h-4 w-4" />, roles: ['ADMIN_GAP'] },
+      { label: 'Rendez-vous', to: '/gap/appointments', icon: <CalendarDays className="h-4 w-4" />, roles: ['ADMIN_GAP'] },
     ],
   },
   {
     title: 'Module II — DPI',
     items: [
-      { label: 'Dossiers cliniques', to: '/dpi/encounters', icon: <FileText className="h-4 w-4" /> },
-      { label: 'Constantes vitales', to: '/dpi/vitals', icon: <Activity className="h-4 w-4" /> },
-      { label: 'Prescriptions (CPOE)', to: '/dpi/medications', icon: <Pill className="h-4 w-4" /> },
-      { label: 'Examens de labo', to: '/dpi/lab-orders', icon: <FlaskConical className="h-4 w-4" /> },
+      { label: 'Dossiers cliniques', to: '/dpi/encounters', icon: <FileText className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER'] },
+      { label: 'Constantes vitales', to: '/dpi/vitals', icon: <Activity className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER'] },
+      { label: 'Prescriptions (CPOE)', to: '/dpi/medications', icon: <Pill className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER'] },
+      { label: 'Examens de labo', to: '/dpi/lab-orders', icon: <FlaskConical className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER'] },
+    ],
+  },
+  {
+    title: 'Administration',
+    items: [
+      { label: 'Gestion des tenants', to: '/admin/tenants', icon: <Shield className="h-4 w-4" />, roles: ['SUPER_ADMIN', 'ADMIN_SYSTEM'] },
+      { label: 'Plans', to: '/admin/plans', icon: <Settings className="h-4 w-4" />, roles: ['SUPER_ADMIN', 'ADMIN_SYSTEM'] },
+      { label: 'Demandes d’inscription', to: '/admin/signup-requests', icon: <ClipboardList className="h-4 w-4" />, roles: ['SUPER_ADMIN', 'ADMIN_SYSTEM'] },
     ],
   },
 ]
@@ -62,8 +73,16 @@ const NAV_SECTIONS: NavSection[] = [
 export default function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { userInfo, logout, isAuthenticated } = useKeycloak()
+  const { userInfo, logout, isAuthenticated, hasRole } = useKeycloak()
   const location = useLocation()
+
+  const filteredSections = NAV_SECTIONS.map((section) => {
+    const items = section.items.filter((item) => {
+      if (!item.roles || item.roles.length === 0) return true
+      return item.roles.some((r) => hasRole(r))
+    })
+    return { ...section, items }
+  }).filter((section) => section.items.length > 0)
 
   const sidebarContent = (
     <aside
@@ -101,7 +120,7 @@ export default function AppShell() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto scrollbar-thin py-4 px-2">
-        {NAV_SECTIONS.map((section) => (
+        {filteredSections.map((section) => (
           <div key={section.title} className="mb-4">
             {!collapsed && (
               <p className="mb-1 px-3 text-2xs font-semibold uppercase tracking-widest text-slate-500">

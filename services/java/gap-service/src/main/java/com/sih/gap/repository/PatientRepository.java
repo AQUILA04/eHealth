@@ -18,6 +18,8 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     List<Patient> findByActiveTrue();
 
+    long countByTenantId(String tenantId);
+
     @Query("SELECT p FROM Patient p WHERE p.active = true AND (" +
            "LOWER(p.firstName) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(p.lastName) LIKE LOWER(CONCAT('%', :q, '%')) OR " +

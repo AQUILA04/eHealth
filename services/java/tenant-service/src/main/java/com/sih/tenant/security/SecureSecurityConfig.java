@@ -25,8 +25,11 @@ public class SecureSecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Endpoints publics (monitoring)
+                // Endpoints publics (monitoring + signup self-serve)
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/signup/plans").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/signup").permitAll()
+                .requestMatchers("/api/v1/internal/quota/**").permitAll()
 
                 // Endpoints d'administration des tenants (CRUD) réservés aux Super Admins / Admin System
                 .requestMatchers(HttpMethod.GET, "/api/v1/tenants/**")
@@ -36,6 +39,11 @@ public class SecureSecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/v1/tenants/**")
                     .hasAnyRole("SUPER_ADMIN", "ADMIN_SYSTEM")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/tenants/**")
+                    .hasAnyRole("SUPER_ADMIN", "ADMIN_SYSTEM")
+
+                .requestMatchers("/api/v1/subscriptions/plans/**")
+                    .hasAnyRole("SUPER_ADMIN", "ADMIN_SYSTEM")
+                .requestMatchers("/api/v1/signup/requests/**")
                     .hasAnyRole("SUPER_ADMIN", "ADMIN_SYSTEM")
 
                 .anyRequest().authenticated()

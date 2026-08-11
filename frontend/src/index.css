@@ -31,6 +31,13 @@
 }
 
 @layer components {
+  .landing-root {
+    font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  }
+  .font-display {
+    font-family: Fraunces, Georgia, serif;
+  }
+
   /* Scrollbar personnalisée */
   .scrollbar-thin {
     scrollbar-width: thin;

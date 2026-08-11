@@ -226,3 +226,20 @@ export interface LabOrder {
   resultComment?: string
   orderedAt: string
 }
+
+// ─── Tenant ───────────────────────────────────────────────────────────────────
+
+export interface Tenant {
+  id: string
+  name: string
+  domain?: string
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+  contactEmail?: string
+  contactPhone?: string
+  planId?: string
+  planName?: string
+  subscriptionStatus?: string
+  createdAt: string
+  updatedAt?: string
+}
+

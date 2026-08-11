@@ -29,9 +29,12 @@ public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
+    private final com.sih.gap.client.QuotaClient quotaClient;
 
     @Transactional
     public AppointmentResponse createAppointment(AppointmentRequest request) {
+        quotaClient.assertAndRecordUsage("appointments.create");
+
         Patient patient = patientRepository.findById(request.getPatientId())
             .orElseThrow(() -> new EntityNotFoundException(
                 "Patient introuvable avec l'id: " + request.getPatientId()));
