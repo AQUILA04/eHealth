@@ -434,11 +434,26 @@ docker build -f infrastructure/docker/Dockerfile.java \
 ### Déploiement local (Docker Compose)
 
 ```bash
-# Environnement de développement
-docker-compose -f infrastructure/docker/docker-compose.dev.yml up -d
+# Environnement de développement (stack autonome)
+docker compose -f infrastructure/docker/docker-compose.dev.yml up --build
+```
 
-# Environnement de production
-docker-compose -f infrastructure/docker/docker-compose.prod.yml up -d
+### Déploiement Contabo (OptimizeSolux)
+
+Compose métier uniquement (Postgres + EMPI/GAP/DPI/Tenant + Frontend), branché sur
+**shared-traefik** + **optimize-common-infra** (Keycloak `auth.optimizesolux.com`).
+
+Voir [deploy/README.md](./deploy/README.md) et [deploy/GITHUB-SECRETS-CONTABO.md](./deploy/GITHUB-SECRETS-CONTABO.md).
+
+```bash
+# Sur le VPS (via CD GitHub ou manuellement)
+sudo /opt/ehealth/init.sh prod \
+  ghcr.io/<org>/ehealth-frontend:<sha> \
+  ghcr.io/<org>/ehealth-empi:<sha> \
+  ghcr.io/<org>/ehealth-gap:<sha> \
+  ghcr.io/<org>/ehealth-dpi:<sha> \
+  ghcr.io/<org>/ehealth-tenant:<sha> \
+  --ghcr-username ... --ghcr-token ...
 ```
 
 ### Déploiement Kubernetes
@@ -467,6 +482,8 @@ Le pipeline GitHub Actions est configuré pour:
 4. **Test Java** - Tests unitaires et d'intégration Java
 5. **Test Node.js** - Tests unitaires et d'intégration Node.js
 6. **Security Scan** - Analyse de sécurité avec Trivy
+7. **Build Contabo Images** - Push GHCR (`-frontend`, `-empi`, `-gap`, `-dpi`, `-tenant`) sur `main` / `release/**`
+8. **CD Contabo** - Déploiement SSH via `deploy/init.sh` (branches `release/**` ou promote manuel)
 7. **Build Docker** - Construction et push des images Docker
 8. **Deploy** - Déploiement automatique (sur main/develop)
 

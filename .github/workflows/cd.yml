@@ -1,0 +1,251 @@
+name: eHealth CD Pipeline
+
+# CD Contabo (shared-traefik) :
+# - push / merge sur release/** (après CI success) → deploy PROD
+# - workflow_dispatch (promote) → déploie les dernières images publiées sur main
+#
+# Pattern bootstrap (comme Notification Hub / CleanTrack) :
+#   SSH → curl init.sh depuis GitHub → sync deploy/ → setup si besoin → deploy.sh
+
+on:
+  workflow_run:
+    workflows: ["eHealth CI Pipeline"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform"
+        type: choice
+        required: true
+        default: promote
+        options:
+          - promote
+
+jobs:
+  resolve-images:
+    if: |
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
+       startsWith(github.event.workflow_run.head_branch, 'release/')) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      frontend_image: ${{ steps.resolve.outputs.frontend_image }}
+      empi_image: ${{ steps.resolve.outputs.empi_image }}
+      gap_image: ${{ steps.resolve.outputs.gap_image }}
+      dpi_image: ${{ steps.resolve.outputs.dpi_image }}
+      tenant_image: ${{ steps.resolve.outputs.tenant_image }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Resolve last published image for each component
+        id: resolve
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          HEAD_SHA: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          REPO_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')
+          REGISTRY="ghcr.io"
+
+          echo "$GHCR_TOKEN" | docker login "$REGISTRY" -u "$GHCR_USERNAME" --password-stdin
+
+          git fetch origin main --depth=200 2>/dev/null || git fetch origin main 2>/dev/null || true
+
+          resolve_sha() {
+            local component="$1"
+            local image="$REGISTRY/$REPO_LOWER-$component"
+            local start_sha sha
+
+            for start_sha in "$HEAD_SHA" "origin/main" "main"; do
+              if ! git rev-parse --verify "${start_sha}^{commit}" >/dev/null 2>&1; then
+                continue
+              fi
+              echo "Searching $component image in history of $start_sha" >&2
+              while read -r sha; do
+                if docker manifest inspect "$image:$sha" > /dev/null 2>&1; then
+                  echo "Resolved $component from $start_sha history: $image:$sha" >&2
+                  echo "$image:$sha"
+                  return 0
+                fi
+              done < <(git log --format='%H' "$start_sha" | head -100)
+            done
+
+            echo "ERROR: No published image found for $component in the last 100 commits" >&2
+            return 1
+          }
+
+          FRONTEND_IMAGE=$(resolve_sha "frontend")
+          EMPI_IMAGE=$(resolve_sha "empi")
+          GAP_IMAGE=$(resolve_sha "gap")
+          DPI_IMAGE=$(resolve_sha "dpi")
+          TENANT_IMAGE=$(resolve_sha "tenant")
+
+          echo "Resolved frontend: $FRONTEND_IMAGE"
+          echo "Resolved empi:     $EMPI_IMAGE"
+          echo "Resolved gap:      $GAP_IMAGE"
+          echo "Resolved dpi:      $DPI_IMAGE"
+          echo "Resolved tenant:   $TENANT_IMAGE"
+
+          echo "frontend_image=$FRONTEND_IMAGE" >> "$GITHUB_OUTPUT"
+          echo "empi_image=$EMPI_IMAGE"         >> "$GITHUB_OUTPUT"
+          echo "gap_image=$GAP_IMAGE"           >> "$GITHUB_OUTPUT"
+          echo "dpi_image=$DPI_IMAGE"           >> "$GITHUB_OUTPUT"
+          echo "tenant_image=$TENANT_IMAGE"     >> "$GITHUB_OUTPUT"
+
+  deploy-prod:
+    needs: resolve-images
+    if: |
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'release/')
+    runs-on: ubuntu-latest
+    name: Deploy to PROD (release/**)
+    environment: prod
+    steps:
+      - name: Prepare SSH key
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Bootstrap & Deploy to PROD server
+        env:
+          FRONTEND_IMAGE: ${{ needs.resolve-images.outputs.frontend_image }}
+          EMPI_IMAGE: ${{ needs.resolve-images.outputs.empi_image }}
+          GAP_IMAGE: ${{ needs.resolve-images.outputs.gap_image }}
+          DPI_IMAGE: ${{ needs.resolve-images.outputs.dpi_image }}
+          TENANT_IMAGE: ${{ needs.resolve-images.outputs.tenant_image }}
+          SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+          SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          DB_USER: ${{ secrets.DB_USER }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          PROD_APP_HOSTNAME: ${{ secrets.PROD_APP_HOSTNAME }}
+          PROD_KEYCLOAK_ADMIN_USERNAME: ${{ secrets.PROD_KEYCLOAK_ADMIN_USERNAME }}
+          PROD_KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.PROD_KEYCLOAK_ADMIN_PASSWORD }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          echo "Deploying to PROD ($SERVER_HOST)"
+          echo "  FE=$FRONTEND_IMAGE"
+          echo "  EMPI=$EMPI_IMAGE GAP=$GAP_IMAGE DPI=$DPI_IMAGE TENANT=$TENANT_IMAGE"
+
+          REPO_RAW="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/deploy"
+
+          ssh -o StrictHostKeyChecking=no -i private_key "$SERVER_USER@$SERVER_HOST" bash << ENDSSH
+          set -euo pipefail
+          mkdir -p /opt/ehealth
+          curl -sSL "${REPO_RAW}/init.sh" -o /opt/ehealth/init.sh
+          chmod +x /opt/ehealth/init.sh
+          ENDSSH
+
+          INIT_ARGS=(
+            prod
+            "$FRONTEND_IMAGE"
+            "$EMPI_IMAGE"
+            "$GAP_IMAGE"
+            "$DPI_IMAGE"
+            "$TENANT_IMAGE"
+            --ghcr-username "$GHCR_USERNAME"
+            --ghcr-token "$GHCR_TOKEN"
+            --db-user "$DB_USER"
+            --db-password "$PROD_DB_PASSWORD"
+            --db-name "$PROD_DB_NAME"
+            --app-hostname-prod "$PROD_APP_HOSTNAME"
+            --oidc-issuer-uri "https://auth.optimizesolux.com/realms/ehealth"
+            --oidc-jwk-uri "https://auth.optimizesolux.com/realms/ehealth/protocol/openid-connect/certs"
+            --keycloak-admin-username "$PROD_KEYCLOAK_ADMIN_USERNAME"
+            --keycloak-admin-password "$PROD_KEYCLOAK_ADMIN_PASSWORD"
+            --redis-database "6"
+            --github-repo "$GITHUB_REPOSITORY"
+          )
+
+          REMOTE_CMD="sudo /opt/ehealth/init.sh $(printf '%q ' "${INIT_ARGS[@]}")"
+          ssh -o StrictHostKeyChecking=no -i private_key "$SERVER_USER@$SERVER_HOST" "$REMOTE_CMD"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f private_key
+
+  promote:
+    needs: resolve-images
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'promote'
+    runs-on: ubuntu-latest
+    name: Promote main → PROD
+    environment: prod
+    steps:
+      - name: Prepare SSH key
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Bootstrap & Deploy to PROD server
+        env:
+          FRONTEND_IMAGE: ${{ needs.resolve-images.outputs.frontend_image }}
+          EMPI_IMAGE: ${{ needs.resolve-images.outputs.empi_image }}
+          GAP_IMAGE: ${{ needs.resolve-images.outputs.gap_image }}
+          DPI_IMAGE: ${{ needs.resolve-images.outputs.dpi_image }}
+          TENANT_IMAGE: ${{ needs.resolve-images.outputs.tenant_image }}
+          SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+          SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          DB_USER: ${{ secrets.DB_USER }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          PROD_APP_HOSTNAME: ${{ secrets.PROD_APP_HOSTNAME }}
+          PROD_KEYCLOAK_ADMIN_USERNAME: ${{ secrets.PROD_KEYCLOAK_ADMIN_USERNAME }}
+          PROD_KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.PROD_KEYCLOAK_ADMIN_PASSWORD }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          echo "Promoting to PROD ($SERVER_HOST)"
+
+          REPO_RAW="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/deploy"
+
+          ssh -o StrictHostKeyChecking=no -i private_key "$SERVER_USER@$SERVER_HOST" bash << ENDSSH
+          set -euo pipefail
+          mkdir -p /opt/ehealth
+          curl -sSL "${REPO_RAW}/init.sh" -o /opt/ehealth/init.sh
+          chmod +x /opt/ehealth/init.sh
+          ENDSSH
+
+          INIT_ARGS=(
+            prod
+            "$FRONTEND_IMAGE"
+            "$EMPI_IMAGE"
+            "$GAP_IMAGE"
+            "$DPI_IMAGE"
+            "$TENANT_IMAGE"
+            --ghcr-username "$GHCR_USERNAME"
+            --ghcr-token "$GHCR_TOKEN"
+            --db-user "$DB_USER"
+            --db-password "$PROD_DB_PASSWORD"
+            --db-name "$PROD_DB_NAME"
+            --app-hostname-prod "$PROD_APP_HOSTNAME"
+            --oidc-issuer-uri "https://auth.optimizesolux.com/realms/ehealth"
+            --oidc-jwk-uri "https://auth.optimizesolux.com/realms/ehealth/protocol/openid-connect/certs"
+            --keycloak-admin-username "$PROD_KEYCLOAK_ADMIN_USERNAME"
+            --keycloak-admin-password "$PROD_KEYCLOAK_ADMIN_PASSWORD"
+            --redis-database "6"
+            --github-repo "$GITHUB_REPOSITORY"
+          )
+
+          REMOTE_CMD="sudo /opt/ehealth/init.sh $(printf '%q ' "${INIT_ARGS[@]}")"
+          ssh -o StrictHostKeyChecking=no -i private_key "$SERVER_USER@$SERVER_HOST" "$REMOTE_CMD"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f private_key

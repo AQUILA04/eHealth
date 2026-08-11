@@ -75,11 +75,17 @@
         "clientRole": false
       },
       {
+        "name": "ADMIN_SYSTEM",
+        "description": "Administrateur système — gestion des tenants et configuration",
+        "composite": false,
+        "clientRole": false
+      },
+      {
         "name": "SUPER_ADMIN",
         "description": "Super administrateur système",
         "composite": true,
         "composites": {
-          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE"]
+          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "ADMIN_SYSTEM"]
         },
         "clientRole": false
       }
@@ -158,11 +164,13 @@
       "protocol": "openid-connect",
       "redirectUris": [
         "http://localhost:3000/*",
-        "http://localhost:5173/*"
+        "http://localhost:5173/*",
+        "https://ehealth.optimizesolux.com/*"
       ],
       "webOrigins": [
         "http://localhost:3000",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "https://ehealth.optimizesolux.com"
       ],
       "defaultClientScopes": ["web-origins", "profile", "roles", "email"],
       "optionalClientScopes": ["address", "phone", "offline_access"]
@@ -303,7 +311,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["SUPER_ADMIN"],
+      "realmRoles": ["SUPER_ADMIN", "ADMIN_SYSTEM"],
       "attributes": {
         "matricule": ["SYS-001"]
       }

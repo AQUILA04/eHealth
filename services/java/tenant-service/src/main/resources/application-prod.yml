@@ -1,0 +1,34 @@
+# ============================================================================
+# Profil PROD — Tenant Service avec PostgreSQL
+# Contabo : SPRING_PROFILES_ACTIVE=secure,prod
+# ============================================================================
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  h2:
+    console:
+      enabled: false
+
+server:
+  port: ${SERVER_PORT:8084}
+
+logging:
+  level:
+    com.sih.tenant: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+
+keycloak:
+  server-url: ${KEYCLOAK_SERVER_URL:http://keycloak:8080}
+  realm: ${KEYCLOAK_REALM:ehealth}
+  admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+  admin-password: ${KEYCLOAK_ADMIN_PASSWORD:}
+  admin-client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}

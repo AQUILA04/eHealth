@@ -8,11 +8,12 @@
 # Services inclus :
 #   keycloak-db   — PostgreSQL 16 pour Keycloak
 #   keycloak      — IAM/SSO avec import automatique du realm ehealth
-#   empi-service  — Mock EMPI (port 8081)
-#   gap-service   — Module I — Gestion Administrative du Patient (port 8082)
-#   dpi-service   — Module II — Dossier Patient Informatisé (port 8083)
-#   frontend      — Application React via Nginx (port 3000)
-#   maildev       — Serveur SMTP de test (SMTP 1025, UI 8025)
+#   empi-service   — Mock EMPI (port 8081)
+#   gap-service    — Module I — Gestion Administrative du Patient (port 8082)
+#   dpi-service    — Module II — Dossier Patient Informatisé (port 8083)
+#   tenant-service — Multi-tenant admin (port 8084)
+#   frontend       — Application React via Nginx (port 3000)
+#   maildev        — Serveur SMTP de test (SMTP 1025, UI 8025)
 #
 # Accès rapide après démarrage (~3 min pour le premier build) :
 #   Frontend          : http://localhost:3000
@@ -20,6 +21,7 @@
 #   EMPI API          : http://localhost:8081/api/v1/empi
 #   GAP  API          : http://localhost:8082/api/v1/gap
 #   DPI  API          : http://localhost:8083/api/v1/dpi
+#   Tenant API        : http://localhost:8084/api/v1/tenants
 #   EMPI H2 Console   : http://localhost:8081/h2-console
 #   GAP  H2 Console   : http://localhost:8082/h2-console  (profil mock uniquement)
 #   DPI  H2 Console   : http://localhost:8083/h2-console  (profil mock uniquement)
@@ -35,7 +37,7 @@
 #
 # Pour démarrer uniquement les services backend sans le frontend :
 #   docker compose -f infrastructure/docker/docker-compose.dev.yml up --build \
-#     keycloak empi-service gap-service dpi-service
+#     keycloak empi-service gap-service dpi-service tenant-service
 # ============================================================================
 
 services:
@@ -113,6 +115,14 @@ services:
       dockerfile: services/java/empi-service/Dockerfile
       additional_contexts:
         certs: ./cert
+      network: host
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - NO_PROXY
     container_name: ehealth-empi
     environment:
       SPRING_PROFILES_ACTIVE: mock
@@ -142,6 +152,14 @@ services:
       dockerfile: services/java/gap-service/Dockerfile
       additional_contexts:
         certs: ./cert
+      network: host
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - NO_PROXY
     container_name: ehealth-gap
     environment:
       SPRING_PROFILES_ACTIVE: secure
@@ -150,7 +168,7 @@ services:
       # URL EMPI interne (résolution Docker DNS)
       EMPI_SERVICE_URL: http://empi-service:8081
       # Keycloak — Resource Server JWT
-      KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/ehealth
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/ehealth
       KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
     ports:
       - "8082:8082"
@@ -180,6 +198,14 @@ services:
       dockerfile: services/java/dpi-service/Dockerfile
       additional_contexts:
         certs: ./cert
+      network: host
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - NO_PROXY
     container_name: ehealth-dpi
     environment:
       SPRING_PROFILES_ACTIVE: secure
@@ -188,7 +214,7 @@ services:
       # URL GAP interne
       GAP_SERVICE_URL: http://gap-service:8082
       # Keycloak — Resource Server JWT
-      KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/ehealth
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/ehealth
       KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
     ports:
       - "8083:8083"
@@ -208,11 +234,55 @@ services:
       - ehealth-network
 
   # ──────────────────────────────────────────────────────────────────────────
+  # Tenant Service — Multi-tenant admin (H2 in-memory, profil secure)
+  # Dépend de Keycloak pour la validation JWT et l'Admin API (groupes).
+  # ──────────────────────────────────────────────────────────────────────────
+  tenant-service:
+    build:
+      context: ../..
+      dockerfile: services/java/tenant-service/Dockerfile
+      additional_contexts:
+        certs: ./cert
+      network: host
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - NO_PROXY
+    container_name: ehealth-tenant
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8084
+      LOGGING_FILE_PATH: /app/logs
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/ehealth
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+      KEYCLOAK_SERVER_URL: http://keycloak:8180
+      KEYCLOAK_ADMIN_USERNAME: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8084:8084"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8084/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Frontend React — Nginx avec proxy inverse vers les backends
   # Les variables VITE_* sont injectées au moment du build Docker (build-time).
   # Nginx proxifie /api/v1/empi → empi-service:8081
   #                /api/v1/gap  → gap-service:8082
   #                /api/v1/dpi  → dpi-service:8083
+  #                /api/v1/tenants → tenant-service:8084
   # ──────────────────────────────────────────────────────────────────────────
   frontend:
     build:
@@ -220,14 +290,21 @@ services:
       dockerfile: Dockerfile
       additional_contexts:
         certs: ./cert
+      network: host
       args:
-        VITE_AUTH_ENABLED: "true"
-        VITE_KEYCLOAK_URL: http://localhost:8180
-        VITE_KEYCLOAK_REALM: ehealth
-        VITE_KEYCLOAK_CLIENT_ID: ehealth-frontend
-        VITE_GAP_API_URL: /api/v1/gap
-        VITE_DPI_API_URL: /api/v1/dpi
-        VITE_EMPI_API_URL: /api/v1/empi
+        - http_proxy
+        - https_proxy
+        - no_proxy
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - NO_PROXY
+        - VITE_AUTH_ENABLED=true
+        - VITE_KEYCLOAK_URL=http://localhost:8180
+        - VITE_KEYCLOAK_REALM=ehealth
+        - VITE_KEYCLOAK_CLIENT_ID=ehealth-frontend
+        - VITE_GAP_API_URL=/api/v1/gap
+        - VITE_DPI_API_URL=/api/v1/dpi
+        - VITE_EMPI_API_URL=/api/v1/empi
     container_name: ehealth-frontend
     ports:
       - "3000:80"
@@ -237,6 +314,8 @@ services:
       gap-service:
         condition: service_healthy
       dpi-service:
+        condition: service_healthy
+      tenant-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:80/health || exit 1"]

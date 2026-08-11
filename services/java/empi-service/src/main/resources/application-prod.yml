@@ -1,0 +1,30 @@
+# ============================================================================
+# Profil PROD — EMPI Service avec PostgreSQL
+# Contabo : SPRING_PROFILES_ACTIVE=prod
+# ============================================================================
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  h2:
+    console:
+      enabled: false
+
+server:
+  port: ${SERVER_PORT:8081}
+
+logging:
+  level:
+    com.sih.empi: INFO
+    org.springframework.web: INFO
+
+empi:
+  mock:
+    enabled: false
