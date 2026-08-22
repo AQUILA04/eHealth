@@ -9,7 +9,7 @@ import {
 import { dpiEncounterService } from '@/services/dpi.service'
 import { gapEncounterService, gapPatientService } from '@/services/gap.service'
 import { format } from 'date-fns'
-import type { ClinicalEncounter, ClinicalStatus } from '@/types'
+import type { ClinicalEncounter, ClinicalStatus, Encounter } from '@/types'
 
 const STATUS_LABELS: Record<ClinicalStatus, string> = {
   OPEN: 'Ouvert', CLOSED: 'Clôturé', SUSPENDED: 'Suspendu',
@@ -25,7 +25,7 @@ export default function ClinicalEncountersPage() {
   const [searchedRef, setSearchedRef] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState<Partial<ClinicalEncounter>>({})
-  const [patientEncounters, setPatientEncounters] = useState<any[]>([])
+  const [patientEncounters, setPatientEncounters] = useState<Encounter[]>([])
   const [loadingEncounters, setLoadingEncounters] = useState(false)
 
   const handlePatientRefBlur = async (ref: string) => {

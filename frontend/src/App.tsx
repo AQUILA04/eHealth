@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { KeycloakProvider, useKeycloak } from '@/auth/KeycloakProvider'
+import { PERMISSIONS, type Permission, usePermissions } from '@/auth/permissions'
 import AppShell from '@/components/layout/AppShell'
 import Dashboard from '@/pages/Dashboard'
 import PatientsPage from '@/pages/gap/PatientsPage'
@@ -30,6 +31,13 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+function PermissionRoute({ children, permission }: { children: React.ReactNode; permission: Permission }) {
+  const { can, isLoading } = usePermissions()
+  if (isLoading) return null
+  if (!can(permission)) return <Navigate to="/dashboard" replace />
+  return <>{children}</>
+}
 
 function RoleRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { hasRole, isLoading } = useKeycloak()
@@ -115,10 +123,10 @@ export default function App() {
                 <Route path="/dpi/medications" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER']}><MedicationsPage /></RoleRoute>} />
                 <Route path="/dpi/lab-orders" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER']}><LabOrdersPage /></RoleRoute>} />
 
-                <Route path="/lis/worklist" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER', 'BIOLOGISTE', 'SUPER_ADMIN']}><LaboratoryWorklistPage /></RoleRoute>} />
-                <Route path="/lis/blood-bank" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER', 'BIOLOGISTE', 'SUPER_ADMIN']}><BloodBankPage /></RoleRoute>} />
-                <Route path="/ris/worklist" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER', 'RADIOLOGUE', 'MANIPULATEUR', 'SUPER_ADMIN']}><RadiologyWorklistPage /></RoleRoute>} />
-                <Route path="/pharmacy" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER', 'PHARMACIEN', 'SUPER_ADMIN']}><PharmacyDashboardPage /></RoleRoute>} />
+                <Route path="/lis/worklist" element={<PermissionRoute permission={PERMISSIONS.LIS_WORKLIST_VIEW}><LaboratoryWorklistPage /></PermissionRoute>} />
+                <Route path="/lis/blood-bank" element={<PermissionRoute permission={PERMISSIONS.BLOOD_BANK_VIEW}><BloodBankPage /></PermissionRoute>} />
+                <Route path="/ris/worklist" element={<PermissionRoute permission={PERMISSIONS.RIS_WORKLIST_VIEW}><RadiologyWorklistPage /></PermissionRoute>} />
+                <Route path="/pharmacy" element={<PermissionRoute permission={PERMISSIONS.PHARMACY_VIEW}><PharmacyDashboardPage /></PermissionRoute>} />
 
                 <Route path="/admin/tenants" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><TenantsPage /></RoleRoute>} />
                 <Route path="/admin/plans" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><AdminPlansPage /></RoleRoute>} />

@@ -9,9 +9,9 @@ Cette implémentation complète les fondations GAP et DPI du SIH eHealth par tro
 
 | Domaine | Service | Port local | Rôle principal |
 |---|---:|---:|---|
-| Laboratoire et banque de sang | `lis-service` | `8084` | Gérer les échantillons, les résultats, la validation biologique et la traçabilité transfusionnelle. |
-| Radiologie | `ris-service` | `8085` | Orchestrer le cycle de l’examen d’imagerie, la dosimétrie et le compte-rendu. |
-| Pharmacie et stocks | `pharmacy-service` | `8086` | Gérer le catalogue, les lots, les seuils de stock et la dispensation FEFO. |
+| Laboratoire et banque de sang | `lis-service` | `8085` (interne) | Gérer les échantillons, les résultats, la validation biologique et la traçabilité transfusionnelle. |
+| Radiologie | `ris-service` | `8086` (interne) | Orchestrer le cycle de l’examen d’imagerie, la dosimétrie et le compte-rendu. |
+| Pharmacie et stocks | `pharmacy-service` | `8087` (interne) | Gérer le catalogue, les lots, les seuils de stock et la dispensation FEFO. |
 
 ## Module III — Plateaux techniques
 
@@ -80,7 +80,7 @@ L’interface React ajoute quatre postes de travail accessibles depuis la naviga
 
 ## Exécution locale
 
-Les trois services sont intégrés à `infrastructure/docker/docker-compose.dev.yml`. Le frontend Nginx et le serveur Vite possèdent les proxys correspondants. Les services démarrent sur les ports 8084 à 8086, avec le même realm Keycloak que les modules existants.
+Les trois services sont intégrés à `infrastructure/docker/docker-compose.dev.yml`. Ils écoutent uniquement sur les ports internes 8085 à 8087 et sont exposés au frontend via l’API Gateway, qui valide le JWT et propage le tenant. Ils utilisent le même realm Keycloak que les modules existants.
 
 ```bash
 # Tests backend des modules III et IV
@@ -117,3 +117,19 @@ Les modules III et IV sont intégrés au socle multi-tenant introduit par le `te
 > **Garantie applicative :** toute lecture, sélection FEFO, réservation de poche, dispensation ou transition de workflow est filtrée par le tenant courant. Un identifiant connu d’un autre tenant produit une réponse « introuvable » plutôt qu’un accès aux données.
 
 Les tests d’intégration `LisTenantIsolationIT`, `RisTenantIsolationIT` et `PharmacyTenantIsolationIT` démontrent l’absence de visibilité croisée et autorisent les identifiants métier identiques lorsqu’ils appartiennent à des tenants distincts.
+
+
+## RBAC frontend strict
+
+Le frontend applique désormais une défense en profondeur : la navigation, les routes, les boutons d’action et les modales sont filtrés avec le même référentiel de permissions métier. Le contrôle backend reste obligatoire et fait autorité ; les filtres frontend empêchent quant à eux de révéler une fonctionnalité à un profil qui ne doit pas la connaître.
+
+| Surface frontend | Contrôle appliqué |
+|---|---|
+| Menus latéraux | Les entrées LIS, Banque de sang, RIS et Pharmacie sont rendues uniquement si l’utilisateur possède la permission de consultation correspondante. |
+| Routes | Les pages métier utilisent `PermissionRoute`; un accès direct par URL sans permission redirige vers le tableau de bord. |
+| Actions LIS | Prescription : médecin ; prélèvement : infirmier ou biologiste ; réception, résultat, validation et notification critique : biologiste. |
+| Actions Banque de sang | Demande : médecin ; réception, cross-match et délivrance : biologiste (réception aussi infirmier) ; clôture et incident : infirmier ou biologiste. |
+| Actions RIS | Demande : médecin ; planification, accueil et réalisation : manipulateur ou radiologue ; interprétation et compte-rendu : radiologue. |
+| Actions Pharmacie | Produit, réception de lot, validation et délivrance : pharmacien. |
+
+La couche `frontend/src/auth/permissions.tsx` centralise les permissions. Les composants `Can` masquent chaque action non autorisée et `usePermissions()` permet aux écrans d’évaluer une permission sans dupliquer la matrice de rôles. Les données affichées restent tenant-scopées et filtrées côté services backend par le contexte issu du JWT.

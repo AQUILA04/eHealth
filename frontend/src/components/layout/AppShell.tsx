@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { NavLink, useLocation, Outlet } from 'react-router-dom'
 import { cn } from '@/components/ui'
 import { useKeycloak } from '@/auth/KeycloakProvider'
+import { PERMISSIONS, type Permission, usePermissions } from '@/auth/permissions'
 import {
   LayoutDashboard,
   Users,
@@ -30,6 +31,7 @@ interface NavItem {
   to: string
   icon: React.ReactNode
   roles?: string[]
+  permission?: Permission
 }
 
 interface NavSection {
@@ -65,15 +67,15 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Module III — Plateaux techniques',
     items: [
-      { label: 'Laboratoire (LIS)', to: '/lis/worklist', icon: <FlaskConical className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER', 'BIOLOGISTE'] },
-      { label: 'Banque de sang', to: '/lis/blood-bank', icon: <Droplets className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER', 'BIOLOGISTE'] },
-      { label: 'Radiologie (RIS)', to: '/ris/worklist', icon: <ScanLine className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER', 'RADIOLOGUE', 'MANIPULATEUR'] },
+      { label: 'Laboratoire (LIS)', to: '/lis/worklist', icon: <FlaskConical className="h-4 w-4" />, permission: PERMISSIONS.LIS_WORKLIST_VIEW },
+      { label: 'Banque de sang', to: '/lis/blood-bank', icon: <Droplets className="h-4 w-4" />, permission: PERMISSIONS.BLOOD_BANK_VIEW },
+      { label: 'Radiologie (RIS)', to: '/ris/worklist', icon: <ScanLine className="h-4 w-4" />, permission: PERMISSIONS.RIS_WORKLIST_VIEW },
     ],
   },
   {
     title: 'Module IV — Pharmacie',
     items: [
-      { label: 'Stocks et dispensation', to: '/pharmacy', icon: <Pill className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER', 'PHARMACIEN'] },
+      { label: 'Stocks et dispensation', to: '/pharmacy', icon: <Pill className="h-4 w-4" />, permission: PERMISSIONS.PHARMACY_VIEW },
     ],
   },
   {
@@ -90,10 +92,12 @@ export default function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const { userInfo, logout, hasRole } = useKeycloak()
+  const { can } = usePermissions()
   const location = useLocation()
 
   const filteredSections = NAV_SECTIONS.map((section) => {
     const items = section.items.filter((item) => {
+      if (item.permission && !can(item.permission)) return false
       if (!item.roles || item.roles.length === 0) return true
       return item.roles.some((r) => hasRole(r))
     })
