@@ -5,7 +5,7 @@ import {
   Button, Badge, Card, CardHeader, CardBody,
   Spinner, EmptyState, Table, Thead, Th, Tr, Td, Modal, Input, Select
 } from '@/components/ui'
-import { gapAppointmentService } from '@/services/gap.service'
+import { gapAppointmentService, gapPatientService } from '@/services/gap.service'
 import { format, startOfDay, endOfDay, addDays, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { Appointment, AppointmentStatus } from '@/types'
@@ -45,7 +45,13 @@ export default function AppointmentsPage() {
   })
 
   const createMutation = useMutation({
-    mutationFn: gapAppointmentService.create,
+    mutationFn: async (data: Partial<Appointment & { patientMrn: string }>) => {
+      const patient = await gapPatientService.getByMrn(data.patientMrn!)
+      return gapAppointmentService.create({
+        ...data,
+        patientId: patient.id,
+      })
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['appointments'] })
       setShowCreate(false)

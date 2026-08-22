@@ -61,7 +61,7 @@ export const gapEncounterService = {
   transfer: (id: number, data: { ward: string; room?: string; bedNumber?: string; reason?: string }) =>
     apiClient.patch<Encounter>(`/gap/encounters/${id}/transfer`, data).then((r) => r.data),
 
-  discharge: (id: number, data: { dischargeReason: string; notes?: string }) =>
+  discharge: (id: number, data: { dischargeDisposition: string; dischargeSummary?: string }) =>
     apiClient.patch<Encounter>(`/gap/encounters/${id}/discharge`, data).then((r) => r.data),
 }
 

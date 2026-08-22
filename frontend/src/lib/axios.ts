@@ -33,7 +33,13 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      keycloak.login()
+      if (!keycloak.authenticated) {
+        keycloak.login()
+      } else {
+        console.error(
+          'HTTP 401 Unauthorized received, but client is already authenticated. Avoiding infinite login redirect loop.'
+        )
+      }
     }
     return Promise.reject(error)
   }

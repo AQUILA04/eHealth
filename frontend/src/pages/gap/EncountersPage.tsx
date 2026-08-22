@@ -30,7 +30,7 @@ export default function EncountersPage() {
     encounterType: 'INPATIENT',
   })
   const [transferForm, setTransferForm] = useState({ ward: '', room: '', bedNumber: '', reason: '' })
-  const [dischargeForm, setDischargeForm] = useState({ dischargeReason: '', notes: '' })
+  const [dischargeForm, setDischargeForm] = useState({ dischargeDisposition: 'HOME', dischargeSummary: '' })
 
   const { data: encounters, isLoading } = useQuery({
     queryKey: ['encounters'],
@@ -194,8 +194,8 @@ export default function EncountersPage() {
                           variant="ghost"
                           icon={<LogOut className="h-3.5 w-3.5" />}
                           onClick={() => {
-                            setShowDischarge({ id: entry.encounterId } as Encounter)
-                            setDischargeForm({ dischargeReason: '', notes: '' })
+                             setShowDischarge({ id: entry.encounterId } as Encounter)
+                             setDischargeForm({ dischargeDisposition: 'HOME', dischargeSummary: '' })
                           }}
                         >
                           Sortie
@@ -320,20 +320,27 @@ export default function EncountersPage() {
           }}
           className="space-y-4"
         >
-          <Input
-            label="Motif de sortie *"
+          <Select
+            label="Disposition de sortie *"
             required
-            placeholder="ex: Guérison, Transfert, Décès..."
-            value={dischargeForm.dischargeReason}
-            onChange={(e) => setDischargeForm({ ...dischargeForm, dischargeReason: e.target.value })}
+            value={dischargeForm.dischargeDisposition}
+            onChange={(e) => setDischargeForm({ ...dischargeForm, dischargeDisposition: e.target.value })}
+            options={[
+              { value: 'HOME', label: 'Retour à domicile' },
+              { value: 'TRANSFER_INTERNAL', label: 'Transfert interne' },
+              { value: 'TRANSFER_EXTERNAL', label: 'Transfert externe' },
+              { value: 'DECEASED', label: 'Décédé' },
+              { value: 'LEFT_AMA', label: 'Sortie contre avis médical' },
+              { value: 'LONG_TERM_CARE', label: 'Soins de longue durée' },
+            ]}
           />
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-text-primary">Notes de sortie</label>
+            <label className="text-sm font-medium text-text-primary">Résumé de sortie</label>
             <textarea
               className="w-full rounded-lg border border-surface-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               rows={3}
-              value={dischargeForm.notes}
-              onChange={(e) => setDischargeForm({ ...dischargeForm, notes: e.target.value })}
+              value={dischargeForm.dischargeSummary}
+              onChange={(e) => setDischargeForm({ ...dischargeForm, dischargeSummary: e.target.value })}
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">

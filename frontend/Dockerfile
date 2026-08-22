@@ -6,14 +6,17 @@
 
 # ── Stage 1 : Build Vite ─────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
-RUN apk add --no-cache ca-certificates
+RUN sed -i 's/https/http/g' /etc/apk/repositories && \
+    apk add --no-cache ca-certificates && \
+    sed -i 's/http/https/g' /etc/apk/repositories
 COPY --from=certs ZscalerRootCA.pem /usr/local/share/ca-certificates/ZscalerRootCA.crt
 RUN update-ca-certificates
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/ZscalerRootCA.crt
 WORKDIR /app
 
 # Copier les manifestes de dépendances
 COPY package.json package-lock.json ./
-RUN npm ci --silent
+RUN npm install
 
 # Copier les sources
 COPY . .
@@ -40,7 +43,9 @@ RUN npm run build
 
 # ── Stage 2 : Nginx ──────────────────────────────────────────────────────────
 FROM nginx:1.27-alpine
-RUN apk add --no-cache ca-certificates
+RUN sed -i 's/https/http/g' /etc/apk/repositories && \
+    apk add --no-cache ca-certificates && \
+    sed -i 's/http/https/g' /etc/apk/repositories
 COPY --from=certs ZscalerRootCA.pem /usr/local/share/ca-certificates/ZscalerRootCA.crt
 RUN update-ca-certificates
 

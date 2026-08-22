@@ -1,6 +1,6 @@
 # Walkthrough: Évolution Multi-Tenant SaaS
 
-Nous avons achevé avec succès la transition vers le modèle multi-tenant SaaS pour les modules Spoke (GAP et DPI).
+Nous avons achevé avec succès la transition vers le modèle multi-tenant SaaS pour les modules Spoke (GAP et DPI), en incluant l'interface utilisateur d'administration.
 
 ## Modifications effectuées
 
@@ -65,6 +65,14 @@ Nous avons achevé avec succès la transition vers le modèle multi-tenant SaaS 
     *   [LabOrder.java](file:///c:/Users/kahonsu/Documents/GitHub/eHealth/services/java/dpi-service/src/main/java/com/sih/dpi/entity/LabOrder.java) : Ajout du champ `tenantId` avec indexation et gestion de la population automatique via `@PrePersist`.
 *   **Initialisation des données de test** : Configuration de `TenantContext` dans [DataInitializer.java](file:///c:/Users/kahonsu/Documents/GitHub/eHealth/services/java/dpi-service/src/main/java/com/sih/dpi/config/DataInitializer.java) lors du démarrage à froid.
 
+### 10. Implémentation du Frontend de Gestion des Tenants
+*   **Types de Données** : Ajout de la définition de l'interface `Tenant` dans [index.ts](file:///c:/Users/kahonsu/Documents/GitHub/eHealth/frontend/src/types/index.ts) décrivant la structure d'un tenant.
+*   **Couche Service** : Création de [tenant.service.ts](file:///c:/Users/kahonsu/Documents/GitHub/eHealth/frontend/src/services/tenant.service.ts) pour interroger les endpoints REST `/api/v1/tenants` (CRUD et activation/suspension).
+*   **Navigation & Routage** :
+    *   Mise à jour de [AppShell.tsx](file:///c:/Users/kahonsu/Documents/GitHub/eHealth/frontend/src/components/layout/AppShell.tsx) pour introduire une section `"Administration"` contenant le lien `"Gestion des tenants"`, sécurisée par les rôles `SUPER_ADMIN` et `ADMIN_SYSTEM`.
+    *   Configuration de la route `/admin/tenants` dans [App.tsx](file:///c:/Users/kahonsu/Documents/GitHub/eHealth/frontend/src/App.tsx) enveloppée par le contrôle de rôle `ProtectedRoute`.
+*   **Page d'Administration** : Création de la page premium [TenantsPage.tsx](file:///c:/Users/kahonsu/Documents/GitHub/eHealth/frontend/src/pages/admin/TenantsPage.tsx) proposant un tableau complet avec filtrage par statut, moteur de recherche, cartes d'indicateurs (KPIs) globales, modals de création et modification, ainsi que des actions d'activation/suspension.
+
 ---
 
 ## Validation et Tests
@@ -100,3 +108,8 @@ Nous avons achevé avec succès la transition vers le modèle multi-tenant SaaS 
     mvn clean test
     ```
     Résultat : **BUILD SUCCESS** (Tous les microservices compilent et valident leurs tests unitaires et d'intégration avec succès sous le nouveau modèle multi-tenant SaaS).
+*   **Compilation du Frontend** :
+    ```powershell
+    npm run build
+    ```
+    Résultat : **SUCCESS** (Fichiers d'actifs statiques optimisés générés sans erreur).

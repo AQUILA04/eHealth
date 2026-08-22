@@ -30,6 +30,7 @@ export default function PatientsPage() {
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [form, setForm] = useState<Partial<Patient>>({
     gender: 'UNKNOWN',
     active: true,
@@ -111,7 +112,7 @@ export default function PatientsPage() {
               </Thead>
               <tbody>
                 {(patients as Patient[]).map((p) => (
-                  <Tr key={p.id} onClick={() => navigate(`/gap/patients/${p.id}`)}>
+                  <Tr key={p.id} onClick={() => setSelectedPatient(p)} className="cursor-pointer hover:bg-slate-50">
                     <Td>
                       <span className="font-mono text-xs font-semibold text-primary-700 bg-primary-50 px-2 py-0.5 rounded">
                         {p.localMrn}
@@ -243,6 +244,77 @@ export default function PatientsPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal Détails Patient */}
+      <Modal open={!!selectedPatient} onClose={() => setSelectedPatient(null)} title="Détails du Patient" size="lg">
+        {selectedPatient && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-text-primary">
+                  {selectedPatient.lastName} {selectedPatient.firstName}
+                </h3>
+                <span className="font-mono text-xs font-semibold text-primary-700 bg-primary-50 px-2 py-0.5 rounded mt-1 inline-block">
+                  {selectedPatient.localMrn}
+                </span>
+              </div>
+              <Badge variant={selectedPatient.active ? 'normal' : 'neutral'}>
+                {selectedPatient.active ? 'Actif' : 'Inactif'}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Date de naissance / Âge</p>
+                <p className="text-sm text-text-primary mt-0.5">
+                  {format(new Date(selectedPatient.dateOfBirth), 'dd/MM/yyyy')} ({getAgeFromDob(selectedPatient.dateOfBirth)} ans)
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Genre</p>
+                <p className="text-sm text-text-primary mt-0.5">{getGenderLabel(selectedPatient.gender)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Groupe sanguin</p>
+                <p className="text-sm text-text-primary mt-0.5 font-bold text-clinical-danger">{selectedPatient.bloodGroup || 'Non renseigné'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Nationalité</p>
+                <p className="text-sm text-text-primary mt-0.5">{selectedPatient.nationality || 'Non renseignée'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Téléphone</p>
+                <p className="text-sm text-text-primary mt-0.5">{selectedPatient.phoneNumber || 'Non renseigné'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Email</p>
+                <p className="text-sm text-text-primary mt-0.5">{selectedPatient.email || 'Non renseigné'}</p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Adresse</p>
+                <p className="text-sm text-text-primary mt-0.5">{selectedPatient.address || 'Non renseignée'}</p>
+              </div>
+              <div className="md:col-span-2 border-t border-surface-border pt-3">
+                <h4 className="text-xs text-text-muted font-bold uppercase tracking-wider mb-2">Contact d'urgence</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg">
+                  <div>
+                    <p className="text-xs text-text-muted">Nom du contact</p>
+                    <p className="text-sm text-text-primary font-medium mt-0.5">{selectedPatient.emergencyContactName || 'Non renseigné'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-muted">Téléphone</p>
+                    <p className="text-sm text-text-primary font-medium mt-0.5">{selectedPatient.emergencyContactPhone || 'Non renseigné'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-surface-border">
+              <Button variant="outline" onClick={() => setSelectedPatient(null)}>Fermer</Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

@@ -7,6 +7,7 @@ import {
   Spinner, EmptyState, Table, Thead, Th, Tr, Td, Modal, Select
 } from '@/components/ui'
 import { dpiEncounterService } from '@/services/dpi.service'
+import { gapEncounterService, gapPatientService } from '@/services/gap.service'
 import { format } from 'date-fns'
 import type { ClinicalEncounter, ClinicalStatus } from '@/types'
 
@@ -24,6 +25,32 @@ export default function ClinicalEncountersPage() {
   const [searchedRef, setSearchedRef] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState<Partial<ClinicalEncounter>>({})
+  const [patientEncounters, setPatientEncounters] = useState<any[]>([])
+  const [loadingEncounters, setLoadingEncounters] = useState(false)
+
+  const handlePatientRefBlur = async (ref: string) => {
+    if (!ref) return
+    setLoadingEncounters(true)
+    try {
+      const patient = await gapPatientService.getByMrn(ref)
+      const encs = await gapEncounterService.getByPatient(patient.id)
+      setPatientEncounters(encs)
+      if (encs.length > 0) {
+        setForm(prev => ({
+          ...prev,
+          gapEncounterId: encs[0].id,
+          encounterType: encs[0].encounterType,
+          attendingPhysicianId: encs[0].attendingPhysicianId || '',
+          attendingPhysicianName: encs[0].attendingPhysicianName || ''
+        }))
+      }
+    } catch (err) {
+      console.error(err)
+      setPatientEncounters([])
+    } finally {
+      setLoadingEncounters(false)
+    }
+  }
 
   const { data: encounters, isLoading } = useQuery({
     queryKey: ['clinical-encounters', searchedRef],
@@ -146,20 +173,54 @@ export default function ClinicalEncountersPage() {
           className="space-y-4"
         >
           <Input
-            label="ID de l'admission GAP *"
-            type="number"
-            required
-            placeholder="ex: 1"
-            value={form.gapEncounterId || ''}
-            onChange={(e) => setForm({ ...form, gapEncounterId: parseInt(e.target.value) })}
-          />
-          <Input
             label="Référence patient (MRN / UUID) *"
             required
             placeholder="ex: MRN-00001"
             value={form.patientRef || ''}
             onChange={(e) => setForm({ ...form, patientRef: e.target.value })}
+            onBlur={(e) => handlePatientRefBlur(e.target.value)}
           />
+
+          {loadingEncounters && <div className="flex justify-center py-2"><Spinner size="sm" /></div>}
+
+          {patientEncounters.length > 0 ? (
+            <Select
+              label="Admission GAP *"
+              required
+              value={form.gapEncounterId || ''}
+              onChange={(e) => {
+                const selectedId = parseInt(e.target.value)
+                const found = patientEncounters.find((pe) => pe.id === selectedId)
+                setForm({
+                  ...form,
+                  gapEncounterId: selectedId,
+                  encounterType: found?.encounterType || 'INPATIENT',
+                  attendingPhysicianId: found?.attendingPhysicianId || '',
+                  attendingPhysicianName: found?.attendingPhysicianName || '',
+                })
+              }}
+              options={patientEncounters.map((pe) => ({
+                value: pe.id.toString(),
+                label: `#${pe.id} - ${
+                  pe.encounterType === 'INPATIENT'
+                    ? 'Hospitalisation'
+                    : pe.encounterType === 'OUTPATIENT'
+                    ? 'Consultation'
+                    : pe.encounterType
+                } (${pe.ward || ''}) du ${format(new Date(pe.admissionDate), 'dd/MM/yyyy')}`,
+              }))}
+            />
+          ) : (
+            <Input
+              label="ID de l'admission GAP *"
+              type="number"
+              required
+              placeholder="ex: 1"
+              value={form.gapEncounterId || ''}
+              onChange={(e) => setForm({ ...form, gapEncounterId: parseInt(e.target.value) })}
+            />
+          )}
+
           <Select
             label="Type de dossier *"
             value={form.encounterType || 'INPATIENT'}
