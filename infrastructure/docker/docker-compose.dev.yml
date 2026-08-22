@@ -366,6 +366,36 @@ services:
     networks:
       - ehealth-network
 
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # RCM Service — Module V / Facturation, caisse et tiers payant
+  # Isolé par tenant ; accessible uniquement à travers api-gateway.
+  # ──────────────────────────────────────────────────────────────────────────
+  rcm-service:
+    build:
+      context: ../..
+      dockerfile: services/java/rcm-service/Dockerfile
+    container_name: ehealth-rcm
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8088
+      LOGGING_FILE_PATH: /app/logs
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    expose:
+      - "8088"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8088/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
   # ──────────────────────────────────────────────────────────────────────────
   # API Gateway — Résolution JWT et propagation contrôlée du tenant
   # ──────────────────────────────────────────────────────────────────────────
@@ -383,6 +413,7 @@ services:
       LIS_SERVICE_URL: http://lis-service:8085
       RIS_SERVICE_URL: http://ris-service:8086
       PHARMACY_SERVICE_URL: http://pharmacy-service:8087
+      RCM_SERVICE_URL: http://rcm-service:8088
     expose:
       - "3000"
     depends_on:
@@ -393,6 +424,8 @@ services:
       ris-service:
         condition: service_healthy
       pharmacy-service:
+        condition: service_healthy
+      rcm-service:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -430,6 +463,7 @@ services:
         - VITE_LIS_API_URL=/api/v1/lis
         - VITE_RIS_API_URL=/api/v1/ris
         - VITE_PHARMACY_API_URL=/api/v1/pharmacy
+        - VITE_RCM_API_URL=/api/v1/rcm
     container_name: ehealth-frontend
     ports:
       - "3000:80"

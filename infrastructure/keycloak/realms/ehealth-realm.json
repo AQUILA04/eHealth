@@ -75,6 +75,24 @@
         "clientRole": false
       },
       {
+        "name": "CAISSIER",
+        "description": "Caissier — encaissements et émission des factures",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "FACTURATION",
+        "description": "Gestionnaire de facturation et tiers payant",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "RESPONSABLE_FINANCIER",
+        "description": "Responsable financier — supervision complète du cycle de revenus",
+        "composite": false,
+        "clientRole": false
+      },
+      {
         "name": "PATIENT",
         "description": "Patient — portail patient, résultats, rendez-vous",
         "composite": false,
@@ -91,7 +109,7 @@
         "description": "Super administrateur système",
         "composite": true,
         "composites": {
-          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "ADMIN_SYSTEM"]
+          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "CAISSIER", "FACTURATION", "RESPONSABLE_FINANCIER", "ADMIN_SYSTEM"]
         },
         "clientRole": false
       }

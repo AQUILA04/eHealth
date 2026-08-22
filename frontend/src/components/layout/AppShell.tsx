@@ -24,6 +24,7 @@ import {
   ClipboardList,
   Droplets,
   ScanLine,
+  WalletCards,
 } from 'lucide-react'
 
 interface NavItem {
@@ -76,6 +77,12 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Module IV — Pharmacie',
     items: [
       { label: 'Stocks et dispensation', to: '/pharmacy', icon: <Pill className="h-4 w-4" />, permission: PERMISSIONS.PHARMACY_VIEW },
+    ],
+  },
+  {
+    title: 'Module V — Cycle de revenus',
+    items: [
+      { label: 'Facturation et caisse', to: '/rcm', icon: <WalletCards className="h-4 w-4" />, permission: PERMISSIONS.RCM_VIEW },
     ],
   },
   {

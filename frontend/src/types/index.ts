@@ -401,3 +401,11 @@ export interface Dispensation {
   validatedAt: string
   dispensedAt?: string
 }
+
+// ─── Module V — Gestion financière et cycle de revenus ─────────────────────
+export type InvoiceStatus = 'DRAFT' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'CANCELLED'
+export type ClaimStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'PARTIALLY_APPROVED' | 'DENIED'
+export interface InvoiceLine { id: number; serviceCode: string; description: string; quantity: number; unitPrice: number; lineTotal: number }
+export interface Invoice { id: number; invoiceNumber: string; patientRef: string; clinicalEncounterId?: number; currency: string; payerType: string; insurerName?: string; status: InvoiceStatus; totalAmount: number; insurerAmount: number; patientAmount: number; outstandingAmount: number; createdAt: string; issuedAt?: string; lines: InvoiceLine[] }
+export interface RcmPayment { id: number; invoiceId: number; amount: number; method: string; reference?: string; receivedAt: string; receivedBy: string }
+export interface InsuranceClaim { id: number; claimNumber: string; invoiceId: number; insurerName: string; policyNumber: string; status: ClaimStatus; requestedAmount: number; approvedAmount: number; denialReason?: string; createdAt: string; submittedAt?: string; adjudicatedAt?: string }

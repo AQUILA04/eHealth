@@ -16,6 +16,7 @@ export class AppController {
     private readonly LIS_URL = process.env.LIS_SERVICE_URL || 'http://localhost:8085';
     private readonly RIS_URL = process.env.RIS_SERVICE_URL || 'http://localhost:8086';
     private readonly PHARMACY_URL = process.env.PHARMACY_SERVICE_URL || 'http://localhost:8087';
+    private readonly RCM_URL = process.env.RCM_SERVICE_URL || 'http://localhost:8088';
 
   @All('health')
   getHealth() {
@@ -46,6 +47,8 @@ export class AppController {
       targetBaseUrl = this.RIS_URL;
     } else if (path.startsWith('/api/v1/pharmacy/')) {
       targetBaseUrl = this.PHARMACY_URL;
+    } else if (path.startsWith('/api/v1/rcm/')) {
+      targetBaseUrl = this.RCM_URL;
     } else if (
       path.startsWith('/api/v1/tenants') ||
       path.startsWith('/api/v1/signup') ||
@@ -76,7 +79,7 @@ export class AppController {
     if (
       (path.startsWith('/api/v1/gap/') || path.startsWith('/api/v1/dpi/') ||
         path.startsWith('/api/v1/lis/') || path.startsWith('/api/v1/ris/') ||
-        path.startsWith('/api/v1/pharmacy/')) &&
+        path.startsWith('/api/v1/pharmacy/') || path.startsWith('/api/v1/rcm/')) &&
       !path.includes('/actuator/')
     ) {
       if (!tenantId) {
