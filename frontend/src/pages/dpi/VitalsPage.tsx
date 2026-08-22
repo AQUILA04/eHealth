@@ -70,6 +70,7 @@ export default function VitalsPage() {
                   <Th>SpO₂ (%)</Th>
                   <Th>Poids (kg)</Th>
                   <Th>IMC</Th>
+                  <Th>Alertes</Th>
                   <Th>Par</Th>
                 </tr>
               </Thead>
@@ -98,6 +99,7 @@ export default function VitalsPage() {
                       </Td>
                       <Td>{v.weightKg ?? '—'}</Td>
                       <Td>{v.bmi?.toFixed(1) ?? '—'}</Td>
+                      <Td>{v.criticalAlerts?.length ? <div className="space-y-1">{v.criticalAlerts.map((alert) => <span key={alert} className="block text-xs font-medium text-clinical-danger">{alert}</span>)}</div> : <span className="text-xs text-text-muted">Aucune</span>}</Td>
                       <Td className="text-xs text-text-muted">{v.recordedBy || '—'}</Td>
                     </Tr>
                   ))}

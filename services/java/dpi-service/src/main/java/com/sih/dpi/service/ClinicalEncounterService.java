@@ -283,8 +283,21 @@ public class ClinicalEncounterService {
             .recordedAt(v.getRecordedAt())
             .recordedBy(v.getRecordedBy())
             .notes(v.getNotes())
+            .criticalAlerts(evaluateVitalAlerts(v))
             .createdAt(v.getCreatedAt())
             .build();
+    }
+
+    /** Seuils de sécurité configurés pour une première alerte clinique visible dans le DPI. */
+    private List<String> evaluateVitalAlerts(VitalSign v) {
+        List<String> alerts = new java.util.ArrayList<>();
+        if (v.getOxygenSaturationPercent() != null && v.getOxygenSaturationPercent().compareTo(new java.math.BigDecimal("90")) < 0) alerts.add("Saturation en oxygène critique (< 90 %)");
+        if (v.getHeartRateBpm() != null && (v.getHeartRateBpm() < 40 || v.getHeartRateBpm() > 130)) alerts.add("Fréquence cardiaque critique");
+        if (v.getRespiratoryRateCpm() != null && (v.getRespiratoryRateCpm() < 8 || v.getRespiratoryRateCpm() > 30)) alerts.add("Fréquence respiratoire critique");
+        if (v.getBloodPressureSystolic() != null && (v.getBloodPressureSystolic() < 90 || v.getBloodPressureSystolic() > 180)) alerts.add("Pression artérielle systolique critique");
+        if (v.getTemperatureCelsius() != null && v.getTemperatureCelsius().compareTo(new java.math.BigDecimal("39.5")) >= 0) alerts.add("Hyperthermie critique");
+        if (v.getPainScore() != null && v.getPainScore() >= 8) alerts.add("Douleur sévère");
+        return alerts;
     }
 
     private MedicationOrderResponse toMedResponse(MedicationOrder m) {

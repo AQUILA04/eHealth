@@ -64,6 +64,14 @@ public class EncounterController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Validation de bio-nettoyage après sortie, qui rend le lit disponible. */
+    @PatchMapping("/{id}/bed-ready")
+    public ResponseEntity<EncounterResponse> completeBedCleaning(@PathVariable Long id) {
+        return service.completeBedCleaning(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
     /** Sortie d'un patient. */
     @PatchMapping("/{id}/discharge")
     public ResponseEntity<EncounterResponse> discharge(

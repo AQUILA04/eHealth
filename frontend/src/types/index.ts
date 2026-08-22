@@ -163,10 +163,17 @@ export interface VitalSign {
   temperature?: number
   respiratoryRate?: number
   oxygenSaturation?: number
+  bloodPressureSystolic?: number
+  bloodPressureDiastolic?: number
+  heartRateBpm?: number
+  temperatureCelsius?: number
+  respiratoryRateCpm?: number
+  oxygenSaturationPercent?: number
   weightKg?: number
   heightCm?: number
   bmi?: number
   notes?: string
+  criticalAlerts?: string[]
 }
 
 // ─── DPI — MedicationOrders (CPOE) ───────────────────────────────────────────
