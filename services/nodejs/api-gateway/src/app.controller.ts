@@ -18,6 +18,7 @@ export class AppController {
     private readonly PHARMACY_URL = process.env.PHARMACY_SERVICE_URL || 'http://localhost:8087';
     private readonly RCM_URL = process.env.RCM_SERVICE_URL || 'http://localhost:8088';
     private readonly HR_URL = process.env.HR_SERVICE_URL || 'http://localhost:8089';
+    private readonly SUPPORT_URL = process.env.SUPPORT_SERVICE_URL || 'http://localhost:8090';
 
   @All('health')
   getHealth() {
@@ -52,6 +53,8 @@ export class AppController {
       targetBaseUrl = this.RCM_URL;
     } else if (path.startsWith('/api/v1/hr/')) {
       targetBaseUrl = this.HR_URL;
+    } else if (path.startsWith('/api/v1/support/')) {
+      targetBaseUrl = this.SUPPORT_URL;
     } else if (
       path.startsWith('/api/v1/tenants') ||
       path.startsWith('/api/v1/signup') ||
@@ -82,7 +85,7 @@ export class AppController {
     if (
       (path.startsWith('/api/v1/gap/') || path.startsWith('/api/v1/dpi/') ||
         path.startsWith('/api/v1/lis/') || path.startsWith('/api/v1/ris/') ||
-        path.startsWith('/api/v1/pharmacy/') || path.startsWith('/api/v1/rcm/') || path.startsWith('/api/v1/hr/')) &&
+        path.startsWith('/api/v1/pharmacy/') || path.startsWith('/api/v1/rcm/') || path.startsWith('/api/v1/hr/') || path.startsWith('/api/v1/support/')) &&
       !path.includes('/actuator/')
     ) {
       if (!tenantId) {

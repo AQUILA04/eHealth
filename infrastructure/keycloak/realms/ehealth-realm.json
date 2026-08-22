@@ -105,6 +105,30 @@
         "clientRole": false
       },
       {
+        "name": "DIETETICIEN",
+        "description": "Diététique et production des repas",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "TECHNICIEN_MAINTENANCE",
+        "description": "Maintenance biomédicale et technique",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "AGENT_ENTRETIEN",
+        "description": "Bio-nettoyage et hôtellerie",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "RESPONSABLE_SUPPORT",
+        "description": "Supervision des services de support",
+        "composite": false,
+        "clientRole": false
+      },
+      {
         "name": "PATIENT",
         "description": "Patient — portail patient, résultats, rendez-vous",
         "composite": false,
@@ -121,7 +145,7 @@
         "description": "Super administrateur système",
         "composite": true,
         "composites": {
-          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "CAISSIER", "FACTURATION", "RESPONSABLE_FINANCIER", "RH_MANAGER", "PLANNING_RH", "ADMIN_SYSTEM"]
+          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "CAISSIER", "FACTURATION", "RESPONSABLE_FINANCIER", "RH_MANAGER", "PLANNING_RH", "DIETETICIEN", "TECHNICIEN_MAINTENANCE", "AGENT_ENTRETIEN", "RESPONSABLE_SUPPORT", "ADMIN_SYSTEM"]
         },
         "clientRole": false
       }

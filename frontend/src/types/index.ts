@@ -416,3 +416,10 @@ export interface StaffMember { id: number; employeeNumber: string; firstName: st
 export interface Credential { id: number; staffId: number; staffName: string; type: string; credentialNumber: string; issuedOn: string; expiresOn: string; expired: boolean }
 export type ShiftStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED'
 export interface ShiftAssignment { id: number; staffId: number; staffName: string; unitName: string; shiftType: string; startsAt: string; endsAt: string; status: ShiftStatus; notes?: string }
+
+
+// ─── Module VII — Services de support et hôtellerie ─────────────────────────
+export interface MealOrder { id: number; patientRef: string; dietCode: string; mealType: string; scheduledOn: string; bedRef?: string; status: 'REQUESTED' | 'PREPARED' | 'DELIVERED'; deliveredAt?: string }
+export interface EquipmentAsset { id: number; assetTag: string; name: string; location: string; critical: boolean; status: 'OPERATIONAL' | 'MAINTENANCE'; lastMaintenance?: string }
+export interface MaintenanceOrder { id: number; equipmentId: number; equipmentName: string; title: string; type: string; dueOn: string; status: 'OPEN' | 'COMPLETED'; assignedTo?: string; completedAt?: string }
+export interface CleaningTask { id: number; bedRef: string; unitName: string; cleaningType: string; status: 'REQUESTED' | 'COMPLETED'; requestedAt: string; completedAt?: string }

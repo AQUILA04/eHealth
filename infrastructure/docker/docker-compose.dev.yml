@@ -426,6 +426,33 @@ services:
       - ehealth-network
 
   # ──────────────────────────────────────────────────────────────────────────
+  # Support Service — Module VII / restauration, maintenance et bio-nettoyage
+  # ──────────────────────────────────────────────────────────────────────────
+  support-service:
+    build:
+      context: ../..
+      dockerfile: services/java/support-service/Dockerfile
+    container_name: ehealth-support
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8090
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    expose:
+      - "8090"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8090/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
   # API Gateway — Résolution JWT et propagation contrôlée du tenant
   # ──────────────────────────────────────────────────────────────────────────
   api-gateway:
@@ -444,6 +471,7 @@ services:
       PHARMACY_SERVICE_URL: http://pharmacy-service:8087
       RCM_SERVICE_URL: http://rcm-service:8088
       HR_SERVICE_URL: http://hr-service:8089
+      SUPPORT_SERVICE_URL: http://support-service:8090
     expose:
       - "3000"
     depends_on:
@@ -458,6 +486,8 @@ services:
       rcm-service:
         condition: service_healthy
       hr-service:
+        condition: service_healthy
+      support-service:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -497,6 +527,7 @@ services:
         - VITE_PHARMACY_API_URL=/api/v1/pharmacy
         - VITE_RCM_API_URL=/api/v1/rcm
         - VITE_HR_API_URL=/api/v1/hr
+        - VITE_SUPPORT_API_URL=/api/v1/support
     container_name: ehealth-frontend
     ports:
       - "3000:80"

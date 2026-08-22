@@ -26,6 +26,7 @@ import {
   ScanLine,
   WalletCards,
   UsersRound,
+  Utensils,
 } from 'lucide-react'
 
 interface NavItem {
@@ -90,6 +91,12 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Module VI — Ressources humaines',
     items: [
       { label: 'Personnel et planning', to: '/hr', icon: <UsersRound className="h-4 w-4" />, permission: PERMISSIONS.HR_VIEW },
+    ],
+  },
+  {
+    title: 'Module VII — Services de support',
+    items: [
+      { label: 'Hôtellerie et maintenance', to: '/support', icon: <Utensils className="h-4 w-4" />, permission: PERMISSIONS.SUPPORT_VIEW },
     ],
   },
   {
@@ -281,6 +288,7 @@ function Breadcrumb({ pathname }: { pathname: string }) {
     ris: 'Radiologie',
     pharmacy: 'Pharmacie',
     hr: 'Ressources humaines',
+    support: 'Services de support',
   }
 
   if (segments.length === 0) return <h1 className="text-sm font-semibold text-text-primary">Vue d'ensemble</h1>
