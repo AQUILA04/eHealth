@@ -1,0 +1,1 @@
+package com.sih.portal.repo; import com.sih.portal.entity.*; import java.util.*; import org.springframework.data.jpa.repository.*; public interface Teleconsultations extends JpaRepository<Teleconsultation,Long>{List<Teleconsultation>findByTenantIdOrderByScheduledAtAsc(String t);Optional<Teleconsultation>findByIdAndTenantId(Long i,String t);}

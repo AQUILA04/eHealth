@@ -25,6 +25,7 @@ import PharmacyDashboardPage from '@/pages/pharmacy/PharmacyDashboardPage'
 import RevenueCyclePage from '@/pages/rcm/RevenueCyclePage'
 import HumanResourcesPage from '@/pages/hr/HumanResourcesPage'
 import SupportOperationsPage from '@/pages/support/SupportOperationsPage'
+import PatientPortalPage from '@/pages/portal/PatientPortalPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -133,6 +134,7 @@ export default function App() {
                 <Route path="/rcm" element={<PermissionRoute permission={PERMISSIONS.RCM_VIEW}><RevenueCyclePage /></PermissionRoute>} />
                 <Route path="/hr" element={<PermissionRoute permission={PERMISSIONS.HR_VIEW}><HumanResourcesPage /></PermissionRoute>} />
                 <Route path="/support" element={<PermissionRoute permission={PERMISSIONS.SUPPORT_VIEW}><SupportOperationsPage /></PermissionRoute>} />
+                <Route path="/portal" element={<PermissionRoute permission={PERMISSIONS.PORTAL_VIEW}><PatientPortalPage /></PermissionRoute>} />
 
                 <Route path="/admin/tenants" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><TenantsPage /></RoleRoute>} />
                 <Route path="/admin/plans" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><AdminPlansPage /></RoleRoute>} />

@@ -453,6 +453,28 @@ services:
       - ehealth-network
 
   # ──────────────────────────────────────────────────────────────────────────
+  # Patient Portal Service — Module VIII / rendez-vous et téléconsultation
+  # ──────────────────────────────────────────────────────────────────────────
+  patient-portal-service:
+    build:
+      context: ../..
+      dockerfile: services/java/patient-portal-service/Dockerfile
+    container_name: ehealth-patient-portal
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8091
+    expose:
+      - "8091"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8091/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
   # API Gateway — Résolution JWT et propagation contrôlée du tenant
   # ──────────────────────────────────────────────────────────────────────────
   api-gateway:
@@ -472,6 +494,7 @@ services:
       RCM_SERVICE_URL: http://rcm-service:8088
       HR_SERVICE_URL: http://hr-service:8089
       SUPPORT_SERVICE_URL: http://support-service:8090
+      PORTAL_SERVICE_URL: http://patient-portal-service:8091
     expose:
       - "3000"
     depends_on:
@@ -488,6 +511,8 @@ services:
       hr-service:
         condition: service_healthy
       support-service:
+        condition: service_healthy
+      patient-portal-service:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -528,6 +553,7 @@ services:
         - VITE_RCM_API_URL=/api/v1/rcm
         - VITE_HR_API_URL=/api/v1/hr
         - VITE_SUPPORT_API_URL=/api/v1/support
+        - VITE_PORTAL_API_URL=/api/v1/portal
     container_name: ehealth-frontend
     ports:
       - "3000:80"

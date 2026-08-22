@@ -423,3 +423,8 @@ export interface MealOrder { id: number; patientRef: string; dietCode: string; m
 export interface EquipmentAsset { id: number; assetTag: string; name: string; location: string; critical: boolean; status: 'OPERATIONAL' | 'MAINTENANCE'; lastMaintenance?: string }
 export interface MaintenanceOrder { id: number; equipmentId: number; equipmentName: string; title: string; type: string; dueOn: string; status: 'OPEN' | 'COMPLETED'; assignedTo?: string; completedAt?: string }
 export interface CleaningTask { id: number; bedRef: string; unitName: string; cleaningType: string; status: 'REQUESTED' | 'COMPLETED'; requestedAt: string; completedAt?: string }
+
+
+// ─── Module VIII — Engagement patient et télémédecine ───────────────────────
+export interface PortalAppointment { id: number; patientRef: string; practitioner: string; specialty: string; scheduledAt: string; status: 'REQUESTED' | 'CONFIRMED' }
+export interface Teleconsultation { id: number; patientRef: string; practitioner: string; scheduledAt: string; meetingRoom: string; status: 'SCHEDULED' | 'STARTED' | 'COMPLETED' }

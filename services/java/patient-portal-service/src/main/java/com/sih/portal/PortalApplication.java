@@ -1,0 +1,1 @@
+package com.sih.portal; import org.springframework.boot.*; import org.springframework.boot.autoconfigure.*; @SpringBootApplication public class PortalApplication{public static void main(String[]a){SpringApplication.run(PortalApplication.class,a);}}
