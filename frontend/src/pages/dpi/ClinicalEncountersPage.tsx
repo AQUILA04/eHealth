@@ -7,6 +7,7 @@ import {
   Spinner, EmptyState, Table, Thead, Th, Tr, Td, Modal, Select
 } from '@/components/ui'
 import { dpiEncounterService } from '@/services/dpi.service'
+import { Can, PERMISSIONS } from '@/auth/permissions'
 import { gapEncounterService, gapPatientService } from '@/services/gap.service'
 import { format } from 'date-fns'
 import type { ClinicalEncounter, ClinicalStatus, Encounter } from '@/types'
@@ -83,9 +84,9 @@ export default function ClinicalEncountersPage() {
           <h1 className="text-xl font-bold text-text-primary">Dossiers cliniques</h1>
           <p className="text-sm text-text-muted mt-0.5">Dossier Patient Informatisé (DPI)</p>
         </div>
-        <Button icon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
+        <Can permission={PERMISSIONS.DPI_ENCOUNTER_CREATE}><Button icon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>
           Nouveau dossier
-        </Button>
+        </Button></Can>
       </div>
 
       <Card>
@@ -116,9 +117,9 @@ export default function ClinicalEncountersPage() {
               title="Aucun dossier clinique"
               description={`Aucun dossier trouvé pour "${searchedRef}".`}
               action={
-                <Button size="sm" onClick={() => setShowCreate(true)} icon={<Plus className="h-4 w-4" />}>
+                <Can permission={PERMISSIONS.DPI_ENCOUNTER_CREATE}><Button size="sm" onClick={() => setShowCreate(true)} icon={<Plus className="h-4 w-4" />}>
                   Créer un dossier
-                </Button>
+                </Button></Can>
               }
             />
           ) : (
