@@ -135,6 +135,12 @@
         "clientRole": false
       },
       {
+        "name": "ANALYSTE_BI",
+        "description": "Analyse des indicateurs cliniques, financiers et opérationnels",
+        "composite": false,
+        "clientRole": false
+      },
+      {
         "name": "PATIENT",
         "description": "Patient — portail patient, résultats, rendez-vous",
         "composite": false,
@@ -151,7 +157,7 @@
         "description": "Super administrateur système",
         "composite": true,
         "composites": {
-          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "CAISSIER", "FACTURATION", "RESPONSABLE_FINANCIER", "RH_MANAGER", "PLANNING_RH", "DIETETICIEN", "TECHNICIEN_MAINTENANCE", "AGENT_ENTRETIEN", "RESPONSABLE_SUPPORT", "COORDINATEUR_TELEMEDECINE", "ADMIN_SYSTEM"]
+          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "CAISSIER", "FACTURATION", "RESPONSABLE_FINANCIER", "RH_MANAGER", "PLANNING_RH", "DIETETICIEN", "TECHNICIEN_MAINTENANCE", "AGENT_ENTRETIEN", "RESPONSABLE_SUPPORT", "COORDINATEUR_TELEMEDECINE", "ANALYSTE_BI", "ADMIN_SYSTEM"]
         },
         "clientRole": false
       }

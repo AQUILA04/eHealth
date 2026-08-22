@@ -1,0 +1,1 @@
+package com.sih.analytics.repo; import com.sih.analytics.entity.*; import java.util.*; import org.springframework.data.jpa.repository.*; public interface MetricRepository extends JpaRepository<MetricSnapshot,Long>{List<MetricSnapshot>findByTenantIdOrderByMeasuredAtDesc(String t);Optional<MetricSnapshot>findByIdAndTenantId(Long i,String t);}

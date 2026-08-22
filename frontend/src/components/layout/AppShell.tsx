@@ -27,6 +27,7 @@ import {
   WalletCards,
   UsersRound,
   Utensils,
+  ChartNoAxesCombined,
 } from 'lucide-react'
 
 interface NavItem {
@@ -97,6 +98,12 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Module VII — Services de support',
     items: [
       { label: 'Hôtellerie et maintenance', to: '/support', icon: <Utensils className="h-4 w-4" />, permission: PERMISSIONS.SUPPORT_VIEW },
+    ],
+  },
+  {
+    title: 'Module IX — Business Intelligence',
+    items: [
+      { label: 'Pilotage et analytique', to: '/analytics', icon: <ChartNoAxesCombined className="h-4 w-4" />, permission: PERMISSIONS.ANALYTICS_VIEW },
     ],
   },
   {
@@ -289,6 +296,7 @@ function Breadcrumb({ pathname }: { pathname: string }) {
     pharmacy: 'Pharmacie',
     hr: 'Ressources humaines',
     support: 'Services de support',
+    analytics: 'Pilotage et analytique',
   }
 
   if (segments.length === 0) return <h1 className="text-sm font-semibold text-text-primary">Vue d'ensemble</h1>

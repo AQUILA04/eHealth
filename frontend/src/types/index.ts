@@ -428,3 +428,8 @@ export interface CleaningTask { id: number; bedRef: string; unitName: string; cl
 // ─── Module VIII — Engagement patient et télémédecine ───────────────────────
 export interface PortalAppointment { id: number; patientRef: string; practitioner: string; specialty: string; scheduledAt: string; status: 'REQUESTED' | 'CONFIRMED' }
 export interface Teleconsultation { id: number; patientRef: string; practitioner: string; scheduledAt: string; meetingRoom: string; status: 'SCHEDULED' | 'STARTED' | 'COMPLETED' }
+
+
+// ─── Module IX — Business Intelligence et analytique ────────────────────────
+export interface MetricSnapshot { id: number; category: 'CLINICAL' | 'FINANCIAL' | 'OPERATIONAL'; metricKey: string; label: string; value: number; unit?: string; measuredAt: string; sourceService?: string }
+export interface AnalyticsDashboard { clinical: MetricSnapshot[]; financial: MetricSnapshot[]; operational: MetricSnapshot[]; generatedAt: string }

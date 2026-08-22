@@ -1,0 +1,1 @@
+package com.sih.analytics; import org.springframework.boot.*; import org.springframework.boot.autoconfigure.*; @SpringBootApplication public class AnalyticsApplication{public static void main(String[]a){SpringApplication.run(AnalyticsApplication.class,a);}}
