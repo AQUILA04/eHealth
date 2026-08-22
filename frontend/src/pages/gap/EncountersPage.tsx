@@ -9,14 +9,6 @@ import { gapEncounterService, gapPatientService } from '@/services/gap.service'
 import { format } from 'date-fns'
 import type { Encounter, EncounterType } from '@/types'
 
-const STATUS_LABELS: Record<string, string> = {
-  PLANNED: 'Planifié', ARRIVED: 'Arrivé', IN_PROGRESS: 'En cours',
-  FINISHED: 'Sorti', CANCELLED: 'Annulé',
-}
-const STATUS_VARIANTS: Record<string, 'normal' | 'info' | 'warning' | 'danger' | 'neutral' | 'primary'> = {
-  PLANNED: 'neutral', ARRIVED: 'info', IN_PROGRESS: 'primary',
-  FINISHED: 'normal', CANCELLED: 'danger',
-}
 const TYPE_LABELS: Record<string, string> = {
   INPATIENT: 'Hospitalisation', OUTPATIENT: 'Consultation', EMERGENCY: 'Urgences', DAY_SURGERY: 'Chirurgie ambulatoire',
 }
@@ -32,7 +24,7 @@ export default function EncountersPage() {
   const [transferForm, setTransferForm] = useState({ ward: '', room: '', bedNumber: '', reason: '' })
   const [dischargeForm, setDischargeForm] = useState({ dischargeDisposition: 'HOME', dischargeSummary: '' })
 
-  const { data: encounters, isLoading } = useQuery({
+  const { isLoading } = useQuery({
     queryKey: ['encounters'],
     queryFn: () => gapEncounterService.getByWard('ALL').catch(() => gapEncounterService.getBedBoard().then(() => [] as Encounter[])),
     staleTime: 30_000,
@@ -77,9 +69,6 @@ export default function EncountersPage() {
       setShowDischarge(null)
     },
   })
-
-  // Utiliser bed-board comme source de données si encounters vide
-  const displayData = encounters?.length ? encounters : []
 
   return (
     <div className="space-y-5">

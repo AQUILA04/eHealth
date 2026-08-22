@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  Activity, Pill, FlaskConical, FileText, Plus, ChevronLeft,
+  Activity, Pill, FlaskConical, Plus, ChevronLeft,
   Thermometer, Heart, Wind, Droplets
 } from 'lucide-react'
 import {
