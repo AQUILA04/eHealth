@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
 import { UserPlus, Search, Users } from 'lucide-react'
 import {
   Button, Badge, Card, CardHeader, CardBody,
@@ -26,7 +25,6 @@ function getAgeFromDob(dob: string): number {
 const BLOOD_GROUPS = ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
 export default function PatientsPage() {
-  const navigate = useNavigate()
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)

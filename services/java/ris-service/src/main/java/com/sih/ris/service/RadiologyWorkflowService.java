@@ -3,6 +3,7 @@ package com.sih.ris.service;
 import com.sih.ris.dto.RadiologyDtos.*;
 import com.sih.ris.entity.RadiologyStudy;
 import com.sih.ris.repository.RadiologyStudyRepository;
+import com.sih.shared.tenant.TenantContext;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +20,8 @@ public class RadiologyWorkflowService {
         return toResponse(repository.save(study));
     }
     public List<StudyResponse> list(RadiologyStudy.Status status, String patientRef) {
-        var studies = status != null ? repository.findByStatusOrderByScheduledAtAsc(status) : patientRef != null && !patientRef.isBlank() ? repository.findByPatientRefOrderByRequestedAtDesc(patientRef) : repository.findAll();
+        String tenantId = currentTenant();
+        var studies = status != null ? repository.findByTenantIdAndStatusOrderByScheduledAtAsc(tenantId, status) : patientRef != null && !patientRef.isBlank() ? repository.findByTenantIdAndPatientRefOrderByRequestedAtDesc(tenantId, patientRef) : repository.findByTenantIdOrderByRequestedAtAsc(tenantId);
         return studies.stream().map(this::toResponse).toList();
     }
     public StudyResponse get(Long id) { return toResponse(find(id)); }
@@ -33,7 +35,8 @@ public class RadiologyWorkflowService {
     @Transactional public StudyResponse report(Long id, ReportStudyRequest request) {
         var study = find(id); requireStatus(study, RadiologyStudy.Status.COMPLETED); study.setStatus(RadiologyStudy.Status.REPORTED); study.setReportText(request.reportText()); study.setAssignedRadiologist(request.assignedRadiologist()); study.setReportedAt(LocalDateTime.now()); log.info("RIS: compte-rendu validé pour l'étude {}", id); return toResponse(repository.save(study));
     }
-    private RadiologyStudy find(Long id) { return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Étude radiologique introuvable: " + id)); }
+    private RadiologyStudy find(Long id) { return repository.findByIdAndTenantId(id, currentTenant()).orElseThrow(() -> new EntityNotFoundException("Étude radiologique introuvable: " + id)); }
+    private String currentTenant() { return TenantContext.requireCurrentTenant(); }
     private void requireStatus(RadiologyStudy study, RadiologyStudy.Status status) { if (study.getStatus() != status) throw new IllegalStateException("Transition invalide depuis le statut " + study.getStatus()); }
     private StudyResponse toResponse(RadiologyStudy s) { return new StudyResponse(s.getId(), s.getClinicalEncounterId(), s.getPatientRef(), s.getProcedureName(), s.getProcedureCode(), s.getModality(), s.getPriority(), s.getStatus(), s.getRequestedBy(), s.getAssignedRadiologist(), s.getAssignedTechnologist(), s.getPacsStudyUid(), s.getReportText(), s.getRadiationDoseMgy(), s.getRequestedAt(), s.getScheduledAt(), s.getPerformedAt(), s.getReportedAt()); }
 }

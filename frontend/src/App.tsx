@@ -17,6 +17,10 @@ import AdminPlansPage from '@/pages/admin/AdminPlansPage'
 import SignupRequestsPage from '@/pages/admin/SignupRequestsPage'
 import LandingPage from '@/pages/LandingPage'
 import SignupPage from '@/pages/SignupPage'
+import LaboratoryWorklistPage from '@/pages/lis/LaboratoryWorklistPage'
+import BloodBankPage from '@/pages/lis/BloodBankPage'
+import RadiologyWorklistPage from '@/pages/ris/RadiologyWorklistPage'
+import PharmacyDashboardPage from '@/pages/pharmacy/PharmacyDashboardPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -110,6 +114,11 @@ export default function App() {
                 <Route path="/dpi/vitals" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER']}><VitalsPage /></RoleRoute>} />
                 <Route path="/dpi/medications" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER']}><MedicationsPage /></RoleRoute>} />
                 <Route path="/dpi/lab-orders" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER']}><LabOrdersPage /></RoleRoute>} />
+
+                <Route path="/lis/worklist" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER', 'BIOLOGISTE', 'SUPER_ADMIN']}><LaboratoryWorklistPage /></RoleRoute>} />
+                <Route path="/lis/blood-bank" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER', 'BIOLOGISTE', 'SUPER_ADMIN']}><BloodBankPage /></RoleRoute>} />
+                <Route path="/ris/worklist" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER', 'RADIOLOGUE', 'MANIPULATEUR', 'SUPER_ADMIN']}><RadiologyWorklistPage /></RoleRoute>} />
+                <Route path="/pharmacy" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER', 'PHARMACIEN', 'SUPER_ADMIN']}><PharmacyDashboardPage /></RoleRoute>} />
 
                 <Route path="/admin/tenants" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><TenantsPage /></RoleRoute>} />
                 <Route path="/admin/plans" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><AdminPlansPage /></RoleRoute>} />

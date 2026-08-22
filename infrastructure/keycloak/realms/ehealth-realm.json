@@ -51,6 +51,12 @@
         "clientRole": false
       },
       {
+        "name": "MANIPULATEUR",
+        "description": "Manipulateur en électroradiologie — planification et réalisation des examens",
+        "composite": false,
+        "clientRole": false
+      },
+      {
         "name": "PHARMACIEN",
         "description": "Pharmacien — validation des ordonnances, dispensation",
         "composite": false,
@@ -85,7 +91,7 @@
         "description": "Super administrateur système",
         "composite": true,
         "composites": {
-          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "ADMIN_SYSTEM"]
+          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "ADMIN_SYSTEM"]
         },
         "clientRole": false
       }
@@ -173,7 +179,23 @@
         "https://ehealth.optimizesolux.com"
       ],
       "defaultClientScopes": ["web-origins", "profile", "roles", "email"],
-      "optionalClientScopes": ["address", "phone", "offline_access"]
+      "optionalClientScopes": ["address", "phone", "offline_access"],
+      "protocolMappers": [
+        {
+          "name": "tenant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_id",
+            "claim.name": "tenant_id",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "false"
+          }
+        }
+      ]
     },
     {
       "clientId": "ehealth-swagger",

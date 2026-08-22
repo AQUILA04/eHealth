@@ -5,6 +5,7 @@ import com.sih.lis.entity.LaboratoryOrder;
 import com.sih.lis.entity.LaboratoryResult;
 import com.sih.lis.repository.LaboratoryOrderRepository;
 import com.sih.lis.repository.LaboratoryResultRepository;
+import com.sih.shared.tenant.TenantContext;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,9 +34,10 @@ public class LaboratoryWorkflowService {
     }
 
     public List<OrderResponse> list(LaboratoryOrder.Status status, String patientRef) {
-        List<LaboratoryOrder> orders = status != null ? orderRepository.findByStatusOrderByOrderedAtAsc(status)
-            : patientRef != null && !patientRef.isBlank() ? orderRepository.findByPatientRefOrderByOrderedAtDesc(patientRef)
-            : orderRepository.findAll();
+        String tenantId = currentTenant();
+        List<LaboratoryOrder> orders = status != null ? orderRepository.findByTenantIdAndStatusOrderByOrderedAtAsc(tenantId, status)
+            : patientRef != null && !patientRef.isBlank() ? orderRepository.findByTenantIdAndPatientRefOrderByOrderedAtDesc(tenantId, patientRef)
+            : orderRepository.findByTenantIdOrderByOrderedAtAsc(tenantId);
         return orders.stream().map(this::toResponse).toList();
     }
 
@@ -91,7 +93,8 @@ public class LaboratoryWorkflowService {
         return toResponse(orderRepository.save(order));
     }
 
-    private LaboratoryOrder find(Long id) { return orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Ordre de laboratoire introuvable: " + id)); }
+    private LaboratoryOrder find(Long id) { return orderRepository.findByIdAndTenantId(id, currentTenant()).orElseThrow(() -> new EntityNotFoundException("Ordre de laboratoire introuvable: " + id)); }
+    private String currentTenant() { return TenantContext.requireCurrentTenant(); }
     private void requireStatus(LaboratoryOrder order, LaboratoryOrder.Status status) { if (order.getStatus() != status) throw new IllegalStateException("Transition invalide depuis le statut " + order.getStatus()); }
     private OrderResponse toResponse(LaboratoryOrder order) {
         var results = order.getResults().stream().map(r -> new ResultResponse(r.getId(), r.getAnalyteName(), r.getAnalyteCode(), r.getResultValue(), r.getUnit(), r.getReferenceRange(), r.getInterpretation(), r.getTechnicalValidator(), r.getResultedAt())).toList();

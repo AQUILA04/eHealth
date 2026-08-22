@@ -1,12 +1,13 @@
 package com.sih.pharmacy.entity;
+import com.sih.shared.tenant.TenantScopedEntity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
 
-@Entity @Table(name = "dispensations")
+@Entity @Table(name = "dispensations", indexes = @Index(name = "idx_dispensation_tenant", columnList = "tenantId"))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class Dispensation {
+public class Dispensation extends TenantScopedEntity {
     public enum Status { VALIDATED, DISPENSED, CANCELLED }
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @Column(nullable = false) private Long clinicalEncounterId;

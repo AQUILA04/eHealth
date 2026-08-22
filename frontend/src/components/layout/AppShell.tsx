@@ -21,6 +21,8 @@ import {
   Shield,
   Settings,
   ClipboardList,
+  Droplets,
+  ScanLine,
 } from 'lucide-react'
 
 interface NavItem {
@@ -61,6 +63,20 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: 'Module III — Plateaux techniques',
+    items: [
+      { label: 'Laboratoire (LIS)', to: '/lis/worklist', icon: <FlaskConical className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER', 'BIOLOGISTE'] },
+      { label: 'Banque de sang', to: '/lis/blood-bank', icon: <Droplets className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER', 'BIOLOGISTE'] },
+      { label: 'Radiologie (RIS)', to: '/ris/worklist', icon: <ScanLine className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER', 'RADIOLOGUE', 'MANIPULATEUR'] },
+    ],
+  },
+  {
+    title: 'Module IV — Pharmacie',
+    items: [
+      { label: 'Stocks et dispensation', to: '/pharmacy', icon: <Pill className="h-4 w-4" />, roles: ['MEDECIN', 'INFIRMIER', 'PHARMACIEN'] },
+    ],
+  },
+  {
     title: 'Administration',
     items: [
       { label: 'Gestion des tenants', to: '/admin/tenants', icon: <Shield className="h-4 w-4" />, roles: ['SUPER_ADMIN', 'ADMIN_SYSTEM'] },
@@ -73,7 +89,7 @@ const NAV_SECTIONS: NavSection[] = [
 export default function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { userInfo, logout, isAuthenticated, hasRole } = useKeycloak()
+  const { userInfo, logout, hasRole } = useKeycloak()
   const location = useLocation()
 
   const filteredSections = NAV_SECTIONS.map((section) => {
@@ -241,6 +257,11 @@ function Breadcrumb({ pathname }: { pathname: string }) {
     vitals: 'Constantes vitales',
     medications: 'Prescriptions',
     'lab-orders': 'Examens de labo',
+    lis: 'Laboratoire',
+    worklist: 'Poste de travail',
+    'blood-bank': 'Banque de sang',
+    ris: 'Radiologie',
+    pharmacy: 'Pharmacie',
   }
 
   if (segments.length === 0) return <h1 className="text-sm font-semibold text-text-primary">Vue d'ensemble</h1>

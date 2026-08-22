@@ -5,6 +5,7 @@ import com.sih.lis.entity.BloodUnit;
 import com.sih.lis.entity.TransfusionRequest;
 import com.sih.lis.repository.BloodUnitRepository;
 import com.sih.lis.repository.TransfusionRequestRepository;
+import com.sih.shared.tenant.TenantContext;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,18 +25,20 @@ public class BloodBankService {
         return toUnitResponse(bloodUnitRepository.save(unit));
     }
     public List<BloodUnitResponse> listUnits(BloodUnit.Status status) {
-        var units = status == null ? bloodUnitRepository.findAll() : bloodUnitRepository.findByStatusOrderByExpiresOnAsc(status);
+        String tenantId = currentTenant();
+        var units = status == null ? bloodUnitRepository.findByTenantIdOrderByExpiresOnAsc(tenantId) : bloodUnitRepository.findByTenantIdAndStatusOrderByExpiresOnAsc(tenantId, status);
         return units.stream().map(this::toUnitResponse).toList();
     }
     @Transactional public TransfusionResponse request(CreateTransfusionRequest request) {
-        var compatibleUnit = bloodUnitRepository.findByStatusAndComponentAndExpiresOnGreaterThanEqualOrderByExpiresOnAsc(BloodUnit.Status.AVAILABLE, request.component(), LocalDate.now()).stream().filter(unit -> isCompatible(unit, request.recipientAboGroup(), request.recipientRhesus())).findFirst().orElseThrow(() -> new IllegalStateException("Aucune poche compatible et disponible n'a été trouvée."));
+        var compatibleUnit = bloodUnitRepository.findByTenantIdAndStatusAndComponentAndExpiresOnGreaterThanEqualOrderByExpiresOnAsc(currentTenant(), BloodUnit.Status.AVAILABLE, request.component(), LocalDate.now()).stream().filter(unit -> isCompatible(unit, request.recipientAboGroup(), request.recipientRhesus())).findFirst().orElseThrow(() -> new IllegalStateException("Aucune poche compatible et disponible n'a été trouvée."));
         compatibleUnit.setStatus(BloodUnit.Status.RESERVED);
         var transfusion = TransfusionRequest.builder().clinicalEncounterId(request.clinicalEncounterId()).patientRef(request.patientRef()).recipientAboGroup(request.recipientAboGroup()).recipientRhesus(request.recipientRhesus()).component(request.component()).bloodUnit(compatibleUnit).status(TransfusionRequest.Status.REQUESTED).requestedBy(request.requestedBy()).requestedAt(LocalDateTime.now()).build();
         bloodUnitRepository.save(compatibleUnit);
         return toTransfusionResponse(transfusionRepository.save(transfusion));
     }
     public List<TransfusionResponse> listTransfusions(TransfusionRequest.Status status, String patientRef) {
-        var items = status != null ? transfusionRepository.findByStatusOrderByRequestedAtAsc(status) : patientRef != null && !patientRef.isBlank() ? transfusionRepository.findByPatientRefOrderByRequestedAtDesc(patientRef) : transfusionRepository.findAll();
+        String tenantId = currentTenant();
+        var items = status != null ? transfusionRepository.findByTenantIdAndStatusOrderByRequestedAtAsc(tenantId, status) : patientRef != null && !patientRef.isBlank() ? transfusionRepository.findByTenantIdAndPatientRefOrderByRequestedAtDesc(tenantId, patientRef) : transfusionRepository.findByTenantIdOrderByRequestedAtAsc(tenantId);
         return items.stream().map(this::toTransfusionResponse).toList();
     }
     @Transactional public TransfusionResponse validateCrossmatch(Long id, CrossmatchRequest request) {
@@ -59,7 +62,8 @@ public class BloodBankService {
         transfusion.setStatus(TransfusionRequest.Status.REACTION_REPORTED); transfusion.setReactionDescription(request.reactionDescription()); transfusion.setReactionReportedAt(LocalDateTime.now()); log.warn("Banque de sang: incident transfusionnel déclaré pour demande {}", id);
         return toTransfusionResponse(transfusionRepository.save(transfusion));
     }
-    private TransfusionRequest find(Long id) { return transfusionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Demande transfusionnelle introuvable: " + id)); }
+    private TransfusionRequest find(Long id) { return transfusionRepository.findByIdAndTenantId(id, currentTenant()).orElseThrow(() -> new EntityNotFoundException("Demande transfusionnelle introuvable: " + id)); }
+    private String currentTenant() { return TenantContext.requireCurrentTenant(); }
     private void requireStatus(TransfusionRequest item, TransfusionRequest.Status expected) { if (item.getStatus() != expected) throw new IllegalStateException("Transition invalide depuis le statut " + item.getStatus()); }
     private boolean isCompatible(BloodUnit unit, BloodUnit.AboGroup recipient, BloodUnit.Rhesus recipientRh) {
         boolean abo = switch (recipient) { case O -> unit.getAboGroup() == BloodUnit.AboGroup.O; case A -> unit.getAboGroup() == BloodUnit.AboGroup.A || unit.getAboGroup() == BloodUnit.AboGroup.O; case B -> unit.getAboGroup() == BloodUnit.AboGroup.B || unit.getAboGroup() == BloodUnit.AboGroup.O; case AB -> true; };

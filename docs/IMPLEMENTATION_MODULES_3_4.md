@@ -100,3 +100,20 @@ docker compose -f infrastructure/docker/docker-compose.dev.yml up --build
 Des tests d’intégration `MockMvc` couvrent un cycle complet pour chacun des flux critiques : laboratoire avec valeur critique, radiologie avec compte-rendu, banque de sang avec compatibilité et délivrance, ainsi que pharmacie avec réception de lot, validation et dispensation FEFO.
 
 > L’environnement `mock` emploie H2 en mémoire. Il est destiné au développement et aux tests ; les déploiements sécurisés doivent utiliser les configurations de persistance et d’exploitation prévues pour l’environnement cible.
+
+
+## Intégration multi-tenant
+
+Les modules III et IV sont intégrés au socle multi-tenant introduit par le `tenant-service` et `shared-tenant-lib`. Le tenant n’est jamais reçu depuis les DTO métier. Il est résolu à partir du claim JWT `tenant_id` par l’API Gateway, qui vérifie que le tenant est actif puis propage uniquement l’en-tête interne `X-Tenant-ID` aux services en aval.
+
+| Couche | Mécanisme appliqué |
+|---|---|
+| Keycloak | Le client `ehealth-frontend` publie l’attribut utilisateur `tenant_id` dans les jetons d’accès, d’identité et UserInfo. |
+| Gateway | Les routes `/api/v1/lis`, `/api/v1/ris` et `/api/v1/pharmacy` exigent un tenant actif et sont transmises avec `X-Tenant-ID`. |
+| Services Java | Chaque service dépend de `shared-tenant-lib`; le `TenantContext` est utilisé de façon obligatoire sur les lectures et accès par identifiant. |
+| Persistance | Toutes les entités LIS, RIS et Pharmacie étendent `TenantScopedEntity`, qui renseigne `tenantId` à la création; les contraintes métier et index sont tenant-scopés. |
+| Infrastructure | LIS, RIS et Pharmacie ne publient aucun port hôte dans Docker Compose et sont joignables uniquement par le gateway. |
+
+> **Garantie applicative :** toute lecture, sélection FEFO, réservation de poche, dispensation ou transition de workflow est filtrée par le tenant courant. Un identifiant connu d’un autre tenant produit une réponse « introuvable » plutôt qu’un accès aux données.
+
+Les tests d’intégration `LisTenantIsolationIT`, `RisTenantIsolationIT` et `PharmacyTenantIsolationIT` démontrent l’absence de visibilité croisée et autorisent les identifiants métier identiques lorsqu’ils appartiennent à des tenants distincts.

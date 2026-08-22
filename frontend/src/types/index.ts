@@ -243,3 +243,161 @@ export interface Tenant {
   updatedAt?: string
 }
 
+// ─── Module III — Banque de sang ────────────────────────────────────────────
+
+export type BloodAboGroup = 'A' | 'B' | 'AB' | 'O'
+export type BloodRhesus = 'POSITIVE' | 'NEGATIVE'
+export type BloodComponent = 'RED_CELLS' | 'PLASMA' | 'PLATELETS'
+export type BloodUnitStatus = 'AVAILABLE' | 'RESERVED' | 'ISSUED' | 'TRANSFUSED' | 'EXPIRED' | 'DISCARDED'
+export type TransfusionStatus = 'REQUESTED' | 'COMPATIBILITY_VALIDATED' | 'ISSUED' | 'COMPLETED' | 'REACTION_REPORTED' | 'CANCELLED'
+
+export interface BloodUnit {
+  id: number
+  donationCode: string
+  aboGroup: BloodAboGroup
+  rhesus: BloodRhesus
+  component: BloodComponent
+  collectedOn: string
+  expiresOn: string
+  status: BloodUnitStatus
+  storageLocation?: string
+  expiringSoon: boolean
+}
+
+export interface Transfusion {
+  id: number
+  clinicalEncounterId: number
+  patientRef: string
+  recipientAboGroup: BloodAboGroup
+  recipientRhesus: BloodRhesus
+  component: BloodComponent
+  bloodUnitId: number
+  donationCode: string
+  donorAboGroup: BloodAboGroup
+  donorRhesus: BloodRhesus
+  status: TransfusionStatus
+  requestedBy: string
+  crossmatchValidatedBy?: string
+  issuedBy?: string
+  completedBy?: string
+  requestedAt: string
+  crossmatchValidatedAt?: string
+  issuedAt?: string
+  completedAt?: string
+  reactionDescription?: string
+  reactionReportedAt?: string
+}
+
+
+// ─── Module III — LIS / Laboratoire ─────────────────────────────────────────
+
+export type LaboratoryPriority = 'ROUTINE' | 'URGENT' | 'STAT'
+export type LaboratoryStatus = 'ORDERED' | 'COLLECTED' | 'RECEIVED' | 'IN_ANALYSIS' | 'TECHNICALLY_VALIDATED' | 'BIOLOGICALLY_VALIDATED' | 'CANCELLED'
+export type LaboratoryInterpretation = 'NORMAL' | 'LOW' | 'HIGH' | 'ABNORMAL' | 'CRITICAL_LOW' | 'CRITICAL_HIGH'
+
+export interface LaboratoryResult {
+  id: number
+  analyteName: string
+  analyteCode?: string
+  resultValue: string
+  unit?: string
+  referenceRange?: string
+  interpretation: LaboratoryInterpretation
+  technicalValidator?: string
+  resultedAt: string
+}
+
+export interface LaboratoryOrder {
+  id: number
+  clinicalEncounterId: number
+  patientRef: string
+  examName: string
+  examCode?: string
+  sampleType: string
+  barcode?: string
+  priority: LaboratoryPriority
+  status: LaboratoryStatus
+  orderedBy?: string
+  collectedBy?: string
+  receivedBy?: string
+  validatedBy?: string
+  orderedAt: string
+  collectedAt?: string
+  receivedAt?: string
+  validatedAt?: string
+  criticalNotifiedAt?: string
+  criticalNotifiedTo?: string
+  results: LaboratoryResult[]
+}
+
+// ─── Module III — RIS / Radiologie ──────────────────────────────────────────
+
+export type RadiologyModality = 'XR' | 'CT' | 'MRI' | 'US' | 'NM' | 'MAMMO' | 'OTHER'
+export type RadiologyPriority = 'ROUTINE' | 'URGENT' | 'STAT'
+export type RadiologyStatus = 'REQUESTED' | 'SCHEDULED' | 'CHECKED_IN' | 'IN_PROGRESS' | 'COMPLETED' | 'REPORTED' | 'CANCELLED'
+
+export interface RadiologyStudy {
+  id: number
+  clinicalEncounterId: number
+  patientRef: string
+  procedureName: string
+  procedureCode?: string
+  modality: RadiologyModality
+  priority: RadiologyPriority
+  status: RadiologyStatus
+  requestedBy?: string
+  assignedRadiologist?: string
+  assignedTechnologist?: string
+  pacsStudyUid?: string
+  reportText?: string
+  radiationDoseMgy?: number
+  requestedAt: string
+  scheduledAt?: string
+  performedAt?: string
+  reportedAt?: string
+}
+
+// ─── Module IV — Pharmacie et stocks ────────────────────────────────────────
+
+export type DispensationStatus = 'VALIDATED' | 'DISPENSED' | 'CANCELLED'
+
+export interface MedicationProduct {
+  id: number
+  sku: string
+  name: string
+  genericName?: string
+  atcCode?: string
+  unit: string
+  minimumStock: number
+  quantityOnHand: number
+  lowStock: boolean
+  active: boolean
+}
+
+export interface InventoryLot {
+  id: number
+  productId: number
+  productName: string
+  lotNumber: string
+  quantityOnHand: number
+  expiryDate: string
+  storageLocation: string
+  supplier?: string
+  expiringSoon: boolean
+}
+
+export interface Dispensation {
+  id: number
+  clinicalEncounterId: number
+  patientRef: string
+  productId: number
+  productName: string
+  lotId?: number
+  lotNumber?: string
+  quantity: number
+  status: DispensationStatus
+  pharmacist: string
+  clinicalPrescriptionRef?: string
+  validatedAt: string
+  dispensedAt?: string
+}

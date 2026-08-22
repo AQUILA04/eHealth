@@ -1,13 +1,15 @@
 package com.sih.lis.entity;
 
+import com.sih.shared.tenant.TenantScopedEntity;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
 
 @Entity
-@Table(name = "transfusion_requests")
+@Table(name = "transfusion_requests", indexes = @Index(name = "idx_transfusion_request_tenant", columnList = "tenantId"))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class TransfusionRequest {
+public class TransfusionRequest extends TenantScopedEntity {
     public enum Status { REQUESTED, COMPATIBILITY_VALIDATED, ISSUED, COMPLETED, REACTION_REPORTED, CANCELLED }
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @Column(nullable = false) private Long clinicalEncounterId;

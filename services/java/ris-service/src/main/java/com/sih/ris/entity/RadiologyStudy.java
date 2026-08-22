@@ -1,13 +1,14 @@
 package com.sih.ris.entity;
+import com.sih.shared.tenant.TenantScopedEntity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
 
 @Entity
-@Table(name = "radiology_studies")
+@Table(name = "radiology_studies", indexes = @Index(name = "idx_radiology_study_tenant", columnList = "tenantId"))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class RadiologyStudy {
+public class RadiologyStudy extends TenantScopedEntity {
     public enum Modality { XR, CT, MRI, US, NM, MAMMO, OTHER }
     public enum Priority { ROUTINE, URGENT, STAT }
     public enum Status { REQUESTED, SCHEDULED, CHECKED_IN, IN_PROGRESS, COMPLETED, REPORTED, CANCELLED }
