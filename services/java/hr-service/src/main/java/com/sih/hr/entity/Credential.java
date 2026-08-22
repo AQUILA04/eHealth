@@ -1,0 +1,3 @@
+package com.sih.hr.entity;
+import com.sih.shared.tenant.TenantScopedEntity; import jakarta.persistence.*; import java.time.LocalDate; import lombok.*;
+@Entity @Table(name="hr_credential") @Getter @Setter public class Credential extends TenantScopedEntity { @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id; @ManyToOne(optional=false, fetch=FetchType.LAZY) @JoinColumn(name="staff_id") private StaffMember staff; @Column(nullable=false) private String type; @Column(nullable=false) private String credentialNumber; @Column(nullable=false) private LocalDate issuedOn; @Column(nullable=false) private LocalDate expiresOn; }

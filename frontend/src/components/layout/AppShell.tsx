@@ -25,6 +25,7 @@ import {
   Droplets,
   ScanLine,
   WalletCards,
+  UsersRound,
 } from 'lucide-react'
 
 interface NavItem {
@@ -83,6 +84,12 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Module V — Cycle de revenus',
     items: [
       { label: 'Facturation et caisse', to: '/rcm', icon: <WalletCards className="h-4 w-4" />, permission: PERMISSIONS.RCM_VIEW },
+    ],
+  },
+  {
+    title: 'Module VI — Ressources humaines',
+    items: [
+      { label: 'Personnel et planning', to: '/hr', icon: <UsersRound className="h-4 w-4" />, permission: PERMISSIONS.HR_VIEW },
     ],
   },
   {
@@ -273,6 +280,7 @@ function Breadcrumb({ pathname }: { pathname: string }) {
     'blood-bank': 'Banque de sang',
     ris: 'Radiologie',
     pharmacy: 'Pharmacie',
+    hr: 'Ressources humaines',
   }
 
   if (segments.length === 0) return <h1 className="text-sm font-semibold text-text-primary">Vue d'ensemble</h1>

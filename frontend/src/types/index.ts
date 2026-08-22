@@ -409,3 +409,10 @@ export interface InvoiceLine { id: number; serviceCode: string; description: str
 export interface Invoice { id: number; invoiceNumber: string; patientRef: string; clinicalEncounterId?: number; currency: string; payerType: string; insurerName?: string; status: InvoiceStatus; totalAmount: number; insurerAmount: number; patientAmount: number; outstandingAmount: number; createdAt: string; issuedAt?: string; lines: InvoiceLine[] }
 export interface RcmPayment { id: number; invoiceId: number; amount: number; method: string; reference?: string; receivedAt: string; receivedBy: string }
 export interface InsuranceClaim { id: number; claimNumber: string; invoiceId: number; insurerName: string; policyNumber: string; status: ClaimStatus; requestedAmount: number; approvedAmount: number; denialReason?: string; createdAt: string; submittedAt?: string; adjudicatedAt?: string }
+
+
+// ─── Module VI — Ressources humaines et gestion du personnel ────────────────
+export interface StaffMember { id: number; employeeNumber: string; firstName: string; lastName: string; department: string; position: string; employmentStatus: string; clinicalStaff: boolean; email?: string; hiredOn: string }
+export interface Credential { id: number; staffId: number; staffName: string; type: string; credentialNumber: string; issuedOn: string; expiresOn: string; expired: boolean }
+export type ShiftStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED'
+export interface ShiftAssignment { id: number; staffId: number; staffName: string; unitName: string; shiftType: string; startsAt: string; endsAt: string; status: ShiftStatus; notes?: string }

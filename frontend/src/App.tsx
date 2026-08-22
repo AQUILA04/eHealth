@@ -23,6 +23,7 @@ import BloodBankPage from '@/pages/lis/BloodBankPage'
 import RadiologyWorklistPage from '@/pages/ris/RadiologyWorklistPage'
 import PharmacyDashboardPage from '@/pages/pharmacy/PharmacyDashboardPage'
 import RevenueCyclePage from '@/pages/rcm/RevenueCyclePage'
+import HumanResourcesPage from '@/pages/hr/HumanResourcesPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -129,6 +130,7 @@ export default function App() {
                 <Route path="/ris/worklist" element={<PermissionRoute permission={PERMISSIONS.RIS_WORKLIST_VIEW}><RadiologyWorklistPage /></PermissionRoute>} />
                 <Route path="/pharmacy" element={<PermissionRoute permission={PERMISSIONS.PHARMACY_VIEW}><PharmacyDashboardPage /></PermissionRoute>} />
                 <Route path="/rcm" element={<PermissionRoute permission={PERMISSIONS.RCM_VIEW}><RevenueCyclePage /></PermissionRoute>} />
+                <Route path="/hr" element={<PermissionRoute permission={PERMISSIONS.HR_VIEW}><HumanResourcesPage /></PermissionRoute>} />
 
                 <Route path="/admin/tenants" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><TenantsPage /></RoleRoute>} />
                 <Route path="/admin/plans" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><AdminPlansPage /></RoleRoute>} />

@@ -93,6 +93,18 @@
         "clientRole": false
       },
       {
+        "name": "RH_MANAGER",
+        "description": "Responsable RH — gestion du personnel et des accréditations",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "PLANNING_RH",
+        "description": "Gestionnaire de planning — création, publication et annulation des gardes",
+        "composite": false,
+        "clientRole": false
+      },
+      {
         "name": "PATIENT",
         "description": "Patient — portail patient, résultats, rendez-vous",
         "composite": false,
@@ -109,7 +121,7 @@
         "description": "Super administrateur système",
         "composite": true,
         "composites": {
-          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "CAISSIER", "FACTURATION", "RESPONSABLE_FINANCIER", "ADMIN_SYSTEM"]
+          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "CAISSIER", "FACTURATION", "RESPONSABLE_FINANCIER", "RH_MANAGER", "PLANNING_RH", "ADMIN_SYSTEM"]
         },
         "clientRole": false
       }
