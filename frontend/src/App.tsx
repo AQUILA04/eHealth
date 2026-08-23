@@ -27,6 +27,8 @@ import HumanResourcesPage from '@/pages/hr/HumanResourcesPage'
 import SupportOperationsPage from '@/pages/support/SupportOperationsPage'
 import PatientPortalPage from '@/pages/portal/PatientPortalPage'
 import AnalyticsDashboardPage from '@/pages/analytics/AnalyticsDashboardPage'
+import SmartQueuePage from '@/pages/gap/SmartQueuePage'
+import PublicQueueDisplayPage from '@/pages/gap/PublicQueueDisplayPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -137,6 +139,8 @@ export default function App() {
                 <Route path="/support" element={<PermissionRoute permission={PERMISSIONS.SUPPORT_VIEW}><SupportOperationsPage /></PermissionRoute>} />
                 <Route path="/portal" element={<PermissionRoute permission={PERMISSIONS.PORTAL_VIEW}><PatientPortalPage /></PermissionRoute>} />
                 <Route path="/analytics" element={<PermissionRoute permission={PERMISSIONS.ANALYTICS_VIEW}><AnalyticsDashboardPage /></PermissionRoute>} />
+                <Route path="/gap/smart-queue" element={<PermissionRoute permission={PERMISSIONS.SMART_QUEUE_VIEW}><SmartQueuePage /></PermissionRoute>} />
+                <Route path="/queue-display" element={<PublicQueueDisplayPage />} />
 
                 <Route path="/admin/tenants" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><TenantsPage /></RoleRoute>} />
                 <Route path="/admin/plans" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><AdminPlansPage /></RoleRoute>} />
