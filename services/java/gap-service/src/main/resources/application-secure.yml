@@ -1,30 +1,16 @@
 # ============================================================================
 # Profil SECURE — GAP Service avec Keycloak OAuth2/JWT
-# Démarrage : mvn spring-boot:run -Dspring-boot.run.profiles=secure
+# Démarrage local : mvn spring-boot:run -Dspring-boot.run.profiles=secure
+# Ne pas y mettre de datasource : H2 reste dans application.yml (dev),
+# PostgreSQL dans application-prod.yml. Un datasource H2 ici cassait la prod
+# (profils secure,prod) : Hibernate gardait H2Dialect / user sa.
 # ============================================================================
 spring:
-  datasource:
-    url: jdbc:h2:mem:gapdb_secure;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: false
-    database-platform: org.hibernate.dialect.H2Dialect
-  h2:
-    console:
-      enabled: false
-
-  # OAuth2 Resource Server — Keycloak
   security:
     oauth2:
       resourceserver:
         jwt:
-          # URL de découverte OIDC du realm ehealth
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/ehealth}
-          # Fallback : JWK Set URI si issuer-uri n'est pas disponible au démarrage
           jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8180/realms/ehealth/protocol/openid-connect/certs}
 
 server:

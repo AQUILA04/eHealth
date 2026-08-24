@@ -13,6 +13,11 @@ spring:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        type:
+          preferred_enum_jdbc_type: VARCHAR
   h2:
     console:
       enabled: false

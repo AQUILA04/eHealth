@@ -1,6 +1,6 @@
 # ============================================================================
 # Profil PROD — DPI Service avec PostgreSQL
-# Contabo : SPRING_PROFILES_ACTIVE=secure,prod
+# Contabo : SPRING_PROFILES_ACTIVE=prod
 # ============================================================================
 spring:
   datasource:
@@ -13,9 +13,20 @@ spring:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        type:
+          preferred_enum_jdbc_type: VARCHAR
   h2:
     console:
       enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/ehealth}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8180/realms/ehealth/protocol/openid-connect/certs}
 
 server:
   port: ${SERVER_PORT:8083}

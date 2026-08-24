@@ -1,23 +1,9 @@
 # ============================================================================
 # Profil SECURE — DPI Service avec Keycloak OAuth2/JWT
-# Démarrage : mvn spring-boot:run -Dspring-boot.run.profiles=secure
+# Démarrage local : mvn spring-boot:run -Dspring-boot.run.profiles=secure
+# Datasource : application.yml (H2) ou application-prod.yml (PostgreSQL).
 # ============================================================================
 spring:
-  datasource:
-    url: jdbc:h2:mem:dpidb_secure;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: false
-    database-platform: org.hibernate.dialect.H2Dialect
-  h2:
-    console:
-      enabled: false
-
-  # OAuth2 Resource Server — Keycloak
   security:
     oauth2:
       resourceserver:

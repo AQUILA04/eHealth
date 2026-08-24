@@ -4,6 +4,7 @@
 # Prérequis: shared-traefik + optimize-common-infra (optimizesolux-common).
 # =============================================================================
 set -euo pipefail
+set +H
 
 DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="/opt/ehealth"
@@ -58,7 +59,11 @@ env_quote() {
   if [[ "$val" =~ ^[A-Za-z0-9._:/+-]+$ ]]; then
     printf '%s' "$val"
   else
-    printf "'%s'" "${val//\'/\'\\\'\'}"
+    local escaped="${val//\\/\\\\}"
+    escaped="${escaped//\"/\\\"}"
+    escaped="${escaped//\$/\\$}"
+    escaped="${escaped//\`/\\\`}"
+    printf '"%s"' "$escaped"
   fi
 }
 

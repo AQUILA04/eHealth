@@ -42,6 +42,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ehealth_empi
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-ehealth}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_HIKARI_USERNAME: ${DB_USER:-ehealth}
+      SPRING_DATASOURCE_HIKARI_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_TYPE_PREFERRED_ENUM_JDBC_TYPE: VARCHAR
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${DDL_AUTO:-update}
       EMPI_MATCHING_SIMILARITY_THRESHOLD: "0.85"
       OTEL_SERVICE_NAME: ehealth-empi
@@ -64,11 +70,17 @@ services:
       empi-service:
         condition: service_started
     environment:
-      SPRING_PROFILES_ACTIVE: secure,prod
+      SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: "8082"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ehealth_gap
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-ehealth}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_HIKARI_USERNAME: ${DB_USER:-ehealth}
+      SPRING_DATASOURCE_HIKARI_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_TYPE_PREFERRED_ENUM_JDBC_TYPE: VARCHAR
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${DDL_AUTO:-update}
       EMPI_SERVICE_URL: http://empi-service:8081
       KEYCLOAK_ISSUER_URI: ${OIDC_ISSUER_URI:-https://auth.optimizesolux.com/realms/ehealth}
@@ -93,11 +105,17 @@ services:
       gap-service:
         condition: service_started
     environment:
-      SPRING_PROFILES_ACTIVE: secure,prod
+      SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: "8083"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ehealth_dpi
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-ehealth}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_HIKARI_USERNAME: ${DB_USER:-ehealth}
+      SPRING_DATASOURCE_HIKARI_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_TYPE_PREFERRED_ENUM_JDBC_TYPE: VARCHAR
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${DDL_AUTO:-update}
       GAP_SERVICE_URL: http://gap-service:8082
       KEYCLOAK_ISSUER_URI: ${OIDC_ISSUER_URI:-https://auth.optimizesolux.com/realms/ehealth}
@@ -120,11 +138,17 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: secure,prod
+      SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: "8084"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ehealth_tenant
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-ehealth}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_HIKARI_USERNAME: ${DB_USER:-ehealth}
+      SPRING_DATASOURCE_HIKARI_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_TYPE_PREFERRED_ENUM_JDBC_TYPE: VARCHAR
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${DDL_AUTO:-update}
       KEYCLOAK_ISSUER_URI: ${OIDC_ISSUER_URI:-https://auth.optimizesolux.com/realms/ehealth}
       KEYCLOAK_JWK_URI: ${OIDC_JWK_URI:-https://auth.optimizesolux.com/realms/ehealth/protocol/openid-connect/certs}

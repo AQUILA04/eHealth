@@ -6,6 +6,7 @@
 #   ./init.sh prod <frontend> <empi> <gap> <dpi> <tenant> [options...]
 # =============================================================================
 set -euo pipefail
+set +H
 
 INIT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEPLOY_DIR="/opt/ehealth/deploy"
