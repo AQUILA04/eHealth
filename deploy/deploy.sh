@@ -193,11 +193,31 @@ docker compose \
   pull
 
 echo "Starting services..."
+# Spring Boot healthchecks use start_period=90s and are chained
+# (postgres → empi → gap → dpi → frontend). Compose's default
+# --wait-timeout is 60s, which marks gap unhealthy before it can boot.
+set +e
 docker compose \
   -f "$COMPOSE_FILE" \
   --project-name "$PROJECT_NAME" \
   --env-file "$ENV_FILE" \
-  up -d
+  up -d --wait --wait-timeout 300
+UP_RC=$?
+set -e
+if [[ "$UP_RC" -ne 0 ]]; then
+  echo "ERROR: compose up failed (exit $UP_RC). Status and logs:" >&2
+  docker compose \
+    -f "$COMPOSE_FILE" \
+    --project-name "$PROJECT_NAME" \
+    --env-file "$ENV_FILE" \
+    ps -a || true
+  docker compose \
+    -f "$COMPOSE_FILE" \
+    --project-name "$PROJECT_NAME" \
+    --env-file "$ENV_FILE" \
+    logs --no-color --tail=200 || true
+  exit "$UP_RC"
+fi
 
 ln -sfn "$RELEASE_FILE" "$RELEASES_DIR/${ENV}_current.txt"
 
