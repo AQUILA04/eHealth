@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-@Profile("secure")
+@Profile({"secure", "prod"})
 @Slf4j
 public class RealKeycloakConnector implements KeycloakConnector {
 
