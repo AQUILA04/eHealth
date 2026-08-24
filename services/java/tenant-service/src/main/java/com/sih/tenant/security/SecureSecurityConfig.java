@@ -15,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-@Profile("secure")
+@Profile({"secure", "prod"})
 public class SecureSecurityConfig {
 
     @Bean
