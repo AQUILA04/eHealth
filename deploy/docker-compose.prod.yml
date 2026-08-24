@@ -62,7 +62,7 @@ services:
       postgres:
         condition: service_healthy
       empi-service:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: secure,prod
       SERVER_PORT: "8082"
@@ -91,7 +91,7 @@ services:
       postgres:
         condition: service_healthy
       gap-service:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: secure,prod
       SERVER_PORT: "8083"
