@@ -12,7 +12,15 @@ export class AppController {
   private readonly GAP_URL = process.env.GAP_SERVICE_URL || 'http://localhost:8082';
   private readonly DPI_URL = process.env.DPI_SERVICE_URL || 'http://localhost:8083';
   private readonly EMPI_URL = process.env.EMPI_SERVICE_URL || 'http://localhost:8081';
-  private readonly TENANT_URL = process.env.TENANT_SERVICE_URL || 'http://localhost:8084';
+    private readonly TENANT_URL = process.env.TENANT_SERVICE_URL || 'http://localhost:8084';
+    private readonly LIS_URL = process.env.LIS_SERVICE_URL || 'http://localhost:8085';
+    private readonly RIS_URL = process.env.RIS_SERVICE_URL || 'http://localhost:8086';
+    private readonly PHARMACY_URL = process.env.PHARMACY_SERVICE_URL || 'http://localhost:8087';
+    private readonly RCM_URL = process.env.RCM_SERVICE_URL || 'http://localhost:8088';
+    private readonly HR_URL = process.env.HR_SERVICE_URL || 'http://localhost:8089';
+    private readonly SUPPORT_URL = process.env.SUPPORT_SERVICE_URL || 'http://localhost:8090';
+    private readonly PORTAL_URL = process.env.PORTAL_SERVICE_URL || 'http://localhost:8091';
+    private readonly ANALYTICS_URL = process.env.ANALYTICS_SERVICE_URL || 'http://localhost:8092';
 
   @All('health')
   getHealth() {
@@ -37,6 +45,22 @@ export class AppController {
       targetBaseUrl = this.DPI_URL;
     } else if (path.startsWith('/api/v1/empi/')) {
       targetBaseUrl = this.EMPI_URL;
+    } else if (path.startsWith('/api/v1/lis/')) {
+      targetBaseUrl = this.LIS_URL;
+    } else if (path.startsWith('/api/v1/ris/')) {
+      targetBaseUrl = this.RIS_URL;
+    } else if (path.startsWith('/api/v1/pharmacy/')) {
+      targetBaseUrl = this.PHARMACY_URL;
+    } else if (path.startsWith('/api/v1/rcm/')) {
+      targetBaseUrl = this.RCM_URL;
+    } else if (path.startsWith('/api/v1/hr/')) {
+      targetBaseUrl = this.HR_URL;
+    } else if (path.startsWith('/api/v1/support/')) {
+      targetBaseUrl = this.SUPPORT_URL;
+    } else if (path.startsWith('/api/v1/portal/')) {
+      targetBaseUrl = this.PORTAL_URL;
+    } else if (path.startsWith('/api/v1/analytics/')) {
+      targetBaseUrl = this.ANALYTICS_URL;
     } else if (
       path.startsWith('/api/v1/tenants') ||
       path.startsWith('/api/v1/signup') ||
@@ -63,9 +87,11 @@ export class AppController {
       }
     }
 
-    // If client is hitting clinical endpoints (GAP or DPI), validate tenant
+    // All care-delivery endpoints require an active tenant resolved from the signed JWT.
     if (
-      (path.startsWith('/api/v1/gap/') || path.startsWith('/api/v1/dpi/')) &&
+      (path.startsWith('/api/v1/gap/') || path.startsWith('/api/v1/dpi/') ||
+        path.startsWith('/api/v1/lis/') || path.startsWith('/api/v1/ris/') ||
+        path.startsWith('/api/v1/pharmacy/') || path.startsWith('/api/v1/rcm/') || path.startsWith('/api/v1/hr/') || path.startsWith('/api/v1/support/') || path.startsWith('/api/v1/portal/') || path.startsWith('/api/v1/analytics/')) &&
       !path.includes('/actuator/')
     ) {
       if (!tenantId) {

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { KeycloakProvider, useKeycloak } from '@/auth/KeycloakProvider'
+import { PERMISSIONS, type Permission, usePermissions } from '@/auth/permissions'
 import AppShell from '@/components/layout/AppShell'
 import Dashboard from '@/pages/Dashboard'
 import PatientsPage from '@/pages/gap/PatientsPage'
@@ -17,6 +18,17 @@ import AdminPlansPage from '@/pages/admin/AdminPlansPage'
 import SignupRequestsPage from '@/pages/admin/SignupRequestsPage'
 import LandingPage from '@/pages/LandingPage'
 import SignupPage from '@/pages/SignupPage'
+import LaboratoryWorklistPage from '@/pages/lis/LaboratoryWorklistPage'
+import BloodBankPage from '@/pages/lis/BloodBankPage'
+import RadiologyWorklistPage from '@/pages/ris/RadiologyWorklistPage'
+import PharmacyDashboardPage from '@/pages/pharmacy/PharmacyDashboardPage'
+import RevenueCyclePage from '@/pages/rcm/RevenueCyclePage'
+import HumanResourcesPage from '@/pages/hr/HumanResourcesPage'
+import SupportOperationsPage from '@/pages/support/SupportOperationsPage'
+import PatientPortalPage from '@/pages/portal/PatientPortalPage'
+import AnalyticsDashboardPage from '@/pages/analytics/AnalyticsDashboardPage'
+import SmartQueuePage from '@/pages/gap/SmartQueuePage'
+import PublicQueueDisplayPage from '@/pages/gap/PublicQueueDisplayPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +38,13 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+function PermissionRoute({ children, permission }: { children: React.ReactNode; permission: Permission }) {
+  const { can, isLoading } = usePermissions()
+  if (isLoading) return null
+  if (!can(permission)) return <Navigate to="/dashboard" replace />
+  return <>{children}</>
+}
 
 function RoleRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { hasRole, isLoading } = useKeycloak()
@@ -110,6 +129,18 @@ export default function App() {
                 <Route path="/dpi/vitals" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER']}><VitalsPage /></RoleRoute>} />
                 <Route path="/dpi/medications" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER']}><MedicationsPage /></RoleRoute>} />
                 <Route path="/dpi/lab-orders" element={<RoleRoute allowedRoles={['MEDECIN', 'INFIRMIER']}><LabOrdersPage /></RoleRoute>} />
+
+                <Route path="/lis/worklist" element={<PermissionRoute permission={PERMISSIONS.LIS_WORKLIST_VIEW}><LaboratoryWorklistPage /></PermissionRoute>} />
+                <Route path="/lis/blood-bank" element={<PermissionRoute permission={PERMISSIONS.BLOOD_BANK_VIEW}><BloodBankPage /></PermissionRoute>} />
+                <Route path="/ris/worklist" element={<PermissionRoute permission={PERMISSIONS.RIS_WORKLIST_VIEW}><RadiologyWorklistPage /></PermissionRoute>} />
+                <Route path="/pharmacy" element={<PermissionRoute permission={PERMISSIONS.PHARMACY_VIEW}><PharmacyDashboardPage /></PermissionRoute>} />
+                <Route path="/rcm" element={<PermissionRoute permission={PERMISSIONS.RCM_VIEW}><RevenueCyclePage /></PermissionRoute>} />
+                <Route path="/hr" element={<PermissionRoute permission={PERMISSIONS.HR_VIEW}><HumanResourcesPage /></PermissionRoute>} />
+                <Route path="/support" element={<PermissionRoute permission={PERMISSIONS.SUPPORT_VIEW}><SupportOperationsPage /></PermissionRoute>} />
+                <Route path="/portal" element={<PermissionRoute permission={PERMISSIONS.PORTAL_VIEW}><PatientPortalPage /></PermissionRoute>} />
+                <Route path="/analytics" element={<PermissionRoute permission={PERMISSIONS.ANALYTICS_VIEW}><AnalyticsDashboardPage /></PermissionRoute>} />
+                <Route path="/gap/smart-queue" element={<PermissionRoute permission={PERMISSIONS.SMART_QUEUE_VIEW}><SmartQueuePage /></PermissionRoute>} />
+                <Route path="/queue-display" element={<PublicQueueDisplayPage />} />
 
                 <Route path="/admin/tenants" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><TenantsPage /></RoleRoute>} />
                 <Route path="/admin/plans" element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'ADMIN_SYSTEM']}><AdminPlansPage /></RoleRoute>} />

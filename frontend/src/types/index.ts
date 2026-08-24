@@ -163,10 +163,17 @@ export interface VitalSign {
   temperature?: number
   respiratoryRate?: number
   oxygenSaturation?: number
+  bloodPressureSystolic?: number
+  bloodPressureDiastolic?: number
+  heartRateBpm?: number
+  temperatureCelsius?: number
+  respiratoryRateCpm?: number
+  oxygenSaturationPercent?: number
   weightKg?: number
   heightCm?: number
   bmi?: number
   notes?: string
+  criticalAlerts?: string[]
 }
 
 // ─── DPI — MedicationOrders (CPOE) ───────────────────────────────────────────
@@ -243,3 +250,193 @@ export interface Tenant {
   updatedAt?: string
 }
 
+// ─── Module III — Banque de sang ────────────────────────────────────────────
+
+export type BloodAboGroup = 'A' | 'B' | 'AB' | 'O'
+export type BloodRhesus = 'POSITIVE' | 'NEGATIVE'
+export type BloodComponent = 'RED_CELLS' | 'PLASMA' | 'PLATELETS'
+export type BloodUnitStatus = 'AVAILABLE' | 'RESERVED' | 'ISSUED' | 'TRANSFUSED' | 'EXPIRED' | 'DISCARDED'
+export type TransfusionStatus = 'REQUESTED' | 'COMPATIBILITY_VALIDATED' | 'ISSUED' | 'COMPLETED' | 'REACTION_REPORTED' | 'CANCELLED'
+
+export interface BloodUnit {
+  id: number
+  donationCode: string
+  aboGroup: BloodAboGroup
+  rhesus: BloodRhesus
+  component: BloodComponent
+  collectedOn: string
+  expiresOn: string
+  status: BloodUnitStatus
+  storageLocation?: string
+  expiringSoon: boolean
+}
+
+export interface Transfusion {
+  id: number
+  clinicalEncounterId: number
+  patientRef: string
+  recipientAboGroup: BloodAboGroup
+  recipientRhesus: BloodRhesus
+  component: BloodComponent
+  bloodUnitId: number
+  donationCode: string
+  donorAboGroup: BloodAboGroup
+  donorRhesus: BloodRhesus
+  status: TransfusionStatus
+  requestedBy: string
+  crossmatchValidatedBy?: string
+  issuedBy?: string
+  completedBy?: string
+  requestedAt: string
+  crossmatchValidatedAt?: string
+  issuedAt?: string
+  completedAt?: string
+  reactionDescription?: string
+  reactionReportedAt?: string
+}
+
+
+// ─── Module III — LIS / Laboratoire ─────────────────────────────────────────
+
+export type LaboratoryPriority = 'ROUTINE' | 'URGENT' | 'STAT'
+export type LaboratoryStatus = 'ORDERED' | 'COLLECTED' | 'RECEIVED' | 'IN_ANALYSIS' | 'TECHNICALLY_VALIDATED' | 'BIOLOGICALLY_VALIDATED' | 'CANCELLED'
+export type LaboratoryInterpretation = 'NORMAL' | 'LOW' | 'HIGH' | 'ABNORMAL' | 'CRITICAL_LOW' | 'CRITICAL_HIGH'
+
+export interface LaboratoryResult {
+  id: number
+  analyteName: string
+  analyteCode?: string
+  resultValue: string
+  unit?: string
+  referenceRange?: string
+  interpretation: LaboratoryInterpretation
+  technicalValidator?: string
+  resultedAt: string
+}
+
+export interface LaboratoryOrder {
+  id: number
+  clinicalEncounterId: number
+  patientRef: string
+  examName: string
+  examCode?: string
+  sampleType: string
+  barcode?: string
+  priority: LaboratoryPriority
+  status: LaboratoryStatus
+  orderedBy?: string
+  collectedBy?: string
+  receivedBy?: string
+  validatedBy?: string
+  orderedAt: string
+  collectedAt?: string
+  receivedAt?: string
+  validatedAt?: string
+  criticalNotifiedAt?: string
+  criticalNotifiedTo?: string
+  results: LaboratoryResult[]
+}
+
+// ─── Module III — RIS / Radiologie ──────────────────────────────────────────
+
+export type RadiologyModality = 'XR' | 'CT' | 'MRI' | 'US' | 'NM' | 'MAMMO' | 'OTHER'
+export type RadiologyPriority = 'ROUTINE' | 'URGENT' | 'STAT'
+export type RadiologyStatus = 'REQUESTED' | 'SCHEDULED' | 'CHECKED_IN' | 'IN_PROGRESS' | 'COMPLETED' | 'REPORTED' | 'CANCELLED'
+
+export interface RadiologyStudy {
+  id: number
+  clinicalEncounterId: number
+  patientRef: string
+  procedureName: string
+  procedureCode?: string
+  modality: RadiologyModality
+  priority: RadiologyPriority
+  status: RadiologyStatus
+  requestedBy?: string
+  assignedRadiologist?: string
+  assignedTechnologist?: string
+  pacsStudyUid?: string
+  reportText?: string
+  radiationDoseMgy?: number
+  requestedAt: string
+  scheduledAt?: string
+  performedAt?: string
+  reportedAt?: string
+}
+
+// ─── Module IV — Pharmacie et stocks ────────────────────────────────────────
+
+export type DispensationStatus = 'VALIDATED' | 'DISPENSED' | 'CANCELLED'
+
+export interface MedicationProduct {
+  id: number
+  sku: string
+  name: string
+  genericName?: string
+  atcCode?: string
+  unit: string
+  minimumStock: number
+  quantityOnHand: number
+  lowStock: boolean
+  active: boolean
+}
+
+export interface InventoryLot {
+  id: number
+  productId: number
+  productName: string
+  lotNumber: string
+  quantityOnHand: number
+  expiryDate: string
+  storageLocation: string
+  supplier?: string
+  expiringSoon: boolean
+}
+
+export interface Dispensation {
+  id: number
+  clinicalEncounterId: number
+  patientRef: string
+  productId: number
+  productName: string
+  lotId?: number
+  lotNumber?: string
+  quantity: number
+  status: DispensationStatus
+  pharmacist: string
+  clinicalPrescriptionRef?: string
+  validatedAt: string
+  dispensedAt?: string
+}
+
+// ─── Module V — Gestion financière et cycle de revenus ─────────────────────
+export type InvoiceStatus = 'DRAFT' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'CANCELLED'
+export type ClaimStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'PARTIALLY_APPROVED' | 'DENIED'
+export interface InvoiceLine { id: number; serviceCode: string; description: string; quantity: number; unitPrice: number; lineTotal: number }
+export interface Invoice { id: number; invoiceNumber: string; patientRef: string; clinicalEncounterId?: number; currency: string; payerType: string; insurerName?: string; status: InvoiceStatus; totalAmount: number; insurerAmount: number; patientAmount: number; outstandingAmount: number; createdAt: string; issuedAt?: string; lines: InvoiceLine[] }
+export interface RcmPayment { id: number; invoiceId: number; amount: number; method: string; reference?: string; receivedAt: string; receivedBy: string }
+export interface InsuranceClaim { id: number; claimNumber: string; invoiceId: number; insurerName: string; policyNumber: string; status: ClaimStatus; requestedAmount: number; approvedAmount: number; denialReason?: string; createdAt: string; submittedAt?: string; adjudicatedAt?: string }
+
+
+// ─── Module VI — Ressources humaines et gestion du personnel ────────────────
+export interface StaffMember { id: number; employeeNumber: string; firstName: string; lastName: string; department: string; position: string; employmentStatus: string; clinicalStaff: boolean; email?: string; hiredOn: string }
+export interface Credential { id: number; staffId: number; staffName: string; type: string; credentialNumber: string; issuedOn: string; expiresOn: string; expired: boolean }
+export type ShiftStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED'
+export interface ShiftAssignment { id: number; staffId: number; staffName: string; unitName: string; shiftType: string; startsAt: string; endsAt: string; status: ShiftStatus; notes?: string }
+
+
+// ─── Module VII — Services de support et hôtellerie ─────────────────────────
+export interface MealOrder { id: number; patientRef: string; dietCode: string; mealType: string; scheduledOn: string; bedRef?: string; status: 'REQUESTED' | 'PREPARED' | 'DELIVERED'; deliveredAt?: string }
+export interface EquipmentAsset { id: number; assetTag: string; name: string; location: string; critical: boolean; status: 'OPERATIONAL' | 'MAINTENANCE'; lastMaintenance?: string }
+export interface MaintenanceOrder { id: number; equipmentId: number; equipmentName: string; title: string; type: string; dueOn: string; status: 'OPEN' | 'COMPLETED'; assignedTo?: string; completedAt?: string }
+export interface CleaningTask { id: number; bedRef: string; unitName: string; cleaningType: string; status: 'REQUESTED' | 'COMPLETED'; requestedAt: string; completedAt?: string }
+
+
+// ─── Module VIII — Engagement patient et télémédecine ───────────────────────
+export interface PortalAppointment { id: number; patientRef: string; practitioner: string; specialty: string; scheduledAt: string; status: 'REQUESTED' | 'CONFIRMED' }
+export interface Teleconsultation { id: number; patientRef: string; practitioner: string; scheduledAt: string; meetingRoom: string; status: 'SCHEDULED' | 'STARTED' | 'COMPLETED' }
+
+
+// ─── Module IX — Business Intelligence et analytique ────────────────────────
+export interface MetricSnapshot { id: number; category: 'CLINICAL' | 'FINANCIAL' | 'OPERATIONAL'; metricKey: string; label: string; value: number; unit?: string; measuredAt: string; sourceService?: string }
+export interface AnalyticsDashboard { clinical: MetricSnapshot[]; financial: MetricSnapshot[]; operational: MetricSnapshot[]; generatedAt: string }

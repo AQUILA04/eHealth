@@ -12,6 +12,10 @@
 #   gap-service    — Module I — Gestion Administrative du Patient (port 8082)
 #   dpi-service    — Module II — Dossier Patient Informatisé (port 8083)
 #   tenant-service — Multi-tenant admin (port 8084)
+#   lis-service    — Module III, laboratoire et banque de sang (port interne 8085)
+#   ris-service    — Module III, radiologie (port interne 8086)
+#   pharmacy-service — Module IV, pharmacie et stocks (port interne 8087)
+#   api-gateway    — Point d’entrée API tenant-sécurisé (port interne 3000)
 #   frontend       — Application React via Nginx (port 3000)
 #   maildev        — Serveur SMTP de test (SMTP 1025, UI 8025)
 #
@@ -22,6 +26,7 @@
 #   GAP  API          : http://localhost:8082/api/v1/gap
 #   DPI  API          : http://localhost:8083/api/v1/dpi
 #   Tenant API        : http://localhost:8084/api/v1/tenants
+#   Les API LIS, RIS et Pharmacie sont exposées via le frontend/gateway.
 #   EMPI H2 Console   : http://localhost:8081/h2-console
 #   GAP  H2 Console   : http://localhost:8082/h2-console  (profil mock uniquement)
 #   DPI  H2 Console   : http://localhost:8083/h2-console  (profil mock uniquement)
@@ -37,7 +42,7 @@
 #
 # Pour démarrer uniquement les services backend sans le frontend :
 #   docker compose -f infrastructure/docker/docker-compose.dev.yml up --build \
-#     keycloak empi-service gap-service dpi-service tenant-service
+#     keycloak empi-service gap-service dpi-service tenant-service lis-service ris-service pharmacy-service api-gateway
 # ============================================================================
 
 services:
@@ -277,6 +282,268 @@ services:
       - ehealth-network
 
   # ──────────────────────────────────────────────────────────────────────────
+  # LIS Service — Module III / Laboratoire et banque de sang
+  # Isolé par tenant ; accessible uniquement à travers api-gateway.
+  # ──────────────────────────────────────────────────────────────────────────
+  lis-service:
+    build:
+      context: ../..
+      dockerfile: services/java/lis-service/Dockerfile
+    container_name: ehealth-lis
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8085
+      LOGGING_FILE_PATH: /app/logs
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    expose:
+      - "8085"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8085/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # RIS Service — Module III / Radiologie
+  # ──────────────────────────────────────────────────────────────────────────
+  ris-service:
+    build:
+      context: ../..
+      dockerfile: services/java/ris-service/Dockerfile
+    container_name: ehealth-ris
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8086
+      LOGGING_FILE_PATH: /app/logs
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    expose:
+      - "8086"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8086/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Pharmacy Service — Module IV / Pharmacie et stocks
+  # ──────────────────────────────────────────────────────────────────────────
+  pharmacy-service:
+    build:
+      context: ../..
+      dockerfile: services/java/pharmacy-service/Dockerfile
+    container_name: ehealth-pharmacy
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8087
+      LOGGING_FILE_PATH: /app/logs
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    expose:
+      - "8087"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8087/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # RCM Service — Module V / Facturation, caisse et tiers payant
+  # Isolé par tenant ; accessible uniquement à travers api-gateway.
+  # ──────────────────────────────────────────────────────────────────────────
+  rcm-service:
+    build:
+      context: ../..
+      dockerfile: services/java/rcm-service/Dockerfile
+    container_name: ehealth-rcm
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8088
+      LOGGING_FILE_PATH: /app/logs
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    expose:
+      - "8088"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8088/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # HR Service — Module VI / personnel, accréditations et plannings
+  # Isolé par tenant ; accessible uniquement à travers api-gateway.
+  # ──────────────────────────────────────────────────────────────────────────
+  hr-service:
+    build:
+      context: ../..
+      dockerfile: services/java/hr-service/Dockerfile
+    container_name: ehealth-hr
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8089
+      LOGGING_FILE_PATH: /app/logs
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    expose:
+      - "8089"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8089/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Support Service — Module VII / restauration, maintenance et bio-nettoyage
+  # ──────────────────────────────────────────────────────────────────────────
+  support-service:
+    build:
+      context: ../..
+      dockerfile: services/java/support-service/Dockerfile
+    container_name: ehealth-support
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8090
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/ehealth/protocol/openid-connect/certs
+    expose:
+      - "8090"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8090/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Patient Portal Service — Module VIII / rendez-vous et téléconsultation
+  # ──────────────────────────────────────────────────────────────────────────
+  patient-portal-service:
+    build:
+      context: ../..
+      dockerfile: services/java/patient-portal-service/Dockerfile
+    container_name: ehealth-patient-portal
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8091
+    expose:
+      - "8091"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8091/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Analytics Service — Module IX / indicateurs de pilotage tenant-isolés
+  # ──────────────────────────────────────────────────────────────────────────
+  analytics-service:
+    build:
+      context: ../..
+      dockerfile: services/java/analytics-service/Dockerfile
+    container_name: ehealth-analytics
+    environment:
+      SPRING_PROFILES_ACTIVE: secure
+      SERVER_PORT: 8092
+    expose:
+      - "8092"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8092/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # API Gateway — Résolution JWT et propagation contrôlée du tenant
+  # ──────────────────────────────────────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ../../services/nodejs/api-gateway
+      dockerfile: Dockerfile
+    container_name: ehealth-api-gateway
+    environment:
+      PORT: 3000
+      EMPI_SERVICE_URL: http://empi-service:8081
+      GAP_SERVICE_URL: http://gap-service:8082
+      DPI_SERVICE_URL: http://dpi-service:8083
+      TENANT_SERVICE_URL: http://tenant-service:8084
+      LIS_SERVICE_URL: http://lis-service:8085
+      RIS_SERVICE_URL: http://ris-service:8086
+      PHARMACY_SERVICE_URL: http://pharmacy-service:8087
+      RCM_SERVICE_URL: http://rcm-service:8088
+      HR_SERVICE_URL: http://hr-service:8089
+      SUPPORT_SERVICE_URL: http://support-service:8090
+      PORTAL_SERVICE_URL: http://patient-portal-service:8091
+      ANALYTICS_SERVICE_URL: http://analytics-service:8092
+    expose:
+      - "3000"
+    depends_on:
+      tenant-service:
+        condition: service_healthy
+      lis-service:
+        condition: service_healthy
+      ris-service:
+        condition: service_healthy
+      pharmacy-service:
+        condition: service_healthy
+      rcm-service:
+        condition: service_healthy
+      hr-service:
+        condition: service_healthy
+      support-service:
+        condition: service_healthy
+      patient-portal-service:
+        condition: service_healthy
+      analytics-service:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ehealth-network
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Frontend React — Nginx avec proxy inverse vers les backends
   # Les variables VITE_* sont injectées au moment du build Docker (build-time).
   # Nginx proxifie /api/v1/empi → empi-service:8081
@@ -305,6 +572,14 @@ services:
         - VITE_GAP_API_URL=/api/v1/gap
         - VITE_DPI_API_URL=/api/v1/dpi
         - VITE_EMPI_API_URL=/api/v1/empi
+        - VITE_LIS_API_URL=/api/v1/lis
+        - VITE_RIS_API_URL=/api/v1/ris
+        - VITE_PHARMACY_API_URL=/api/v1/pharmacy
+        - VITE_RCM_API_URL=/api/v1/rcm
+        - VITE_HR_API_URL=/api/v1/hr
+        - VITE_SUPPORT_API_URL=/api/v1/support
+        - VITE_PORTAL_API_URL=/api/v1/portal
+        - VITE_ANALYTICS_API_URL=/api/v1/analytics
     container_name: ehealth-frontend
     ports:
       - "3000:80"
@@ -315,8 +590,8 @@ services:
         condition: service_healthy
       dpi-service:
         condition: service_healthy
-      tenant-service:
-        condition: service_healthy
+      api-gateway:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:80/health || exit 1"]
       interval: 15s

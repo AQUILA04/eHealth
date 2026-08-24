@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { NavLink, useLocation, Outlet } from 'react-router-dom'
 import { cn } from '@/components/ui'
 import { useKeycloak } from '@/auth/KeycloakProvider'
+import { PERMISSIONS, type Permission, usePermissions } from '@/auth/permissions'
 import {
   LayoutDashboard,
   Users,
@@ -21,6 +22,13 @@ import {
   Shield,
   Settings,
   ClipboardList,
+  Droplets,
+  ScanLine,
+  WalletCards,
+  UsersRound,
+  Utensils,
+  ChartNoAxesCombined,
+  ListOrdered,
 } from 'lucide-react'
 
 interface NavItem {
@@ -28,6 +36,7 @@ interface NavItem {
   to: string
   icon: React.ReactNode
   roles?: string[]
+  permission?: Permission
 }
 
 interface NavSection {
@@ -61,6 +70,50 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: 'Module III — Plateaux techniques',
+    items: [
+      { label: 'Laboratoire (LIS)', to: '/lis/worklist', icon: <FlaskConical className="h-4 w-4" />, permission: PERMISSIONS.LIS_WORKLIST_VIEW },
+      { label: 'Banque de sang', to: '/lis/blood-bank', icon: <Droplets className="h-4 w-4" />, permission: PERMISSIONS.BLOOD_BANK_VIEW },
+      { label: 'Radiologie (RIS)', to: '/ris/worklist', icon: <ScanLine className="h-4 w-4" />, permission: PERMISSIONS.RIS_WORKLIST_VIEW },
+    ],
+  },
+  {
+    title: 'Module IV — Pharmacie',
+    items: [
+      { label: 'Stocks et dispensation', to: '/pharmacy', icon: <Pill className="h-4 w-4" />, permission: PERMISSIONS.PHARMACY_VIEW },
+    ],
+  },
+  {
+    title: 'Module V — Cycle de revenus',
+    items: [
+      { label: 'Facturation et caisse', to: '/rcm', icon: <WalletCards className="h-4 w-4" />, permission: PERMISSIONS.RCM_VIEW },
+    ],
+  },
+  {
+    title: 'Module VI — Ressources humaines',
+    items: [
+      { label: 'Personnel et planning', to: '/hr', icon: <UsersRound className="h-4 w-4" />, permission: PERMISSIONS.HR_VIEW },
+    ],
+  },
+  {
+    title: 'Module VII — Services de support',
+    items: [
+      { label: 'Hôtellerie et maintenance', to: '/support', icon: <Utensils className="h-4 w-4" />, permission: PERMISSIONS.SUPPORT_VIEW },
+    ],
+  },
+  {
+    title: 'Accueil et parcours patient',
+    items: [
+      { label: 'Triage et file intelligente', to: '/gap/smart-queue', icon: <ListOrdered className="h-4 w-4" />, permission: PERMISSIONS.SMART_QUEUE_VIEW },
+    ],
+  },
+  {
+    title: 'Module IX — Business Intelligence',
+    items: [
+      { label: 'Pilotage et analytique', to: '/analytics', icon: <ChartNoAxesCombined className="h-4 w-4" />, permission: PERMISSIONS.ANALYTICS_VIEW },
+    ],
+  },
+  {
     title: 'Administration',
     items: [
       { label: 'Gestion des tenants', to: '/admin/tenants', icon: <Shield className="h-4 w-4" />, roles: ['SUPER_ADMIN', 'ADMIN_SYSTEM'] },
@@ -73,11 +126,13 @@ const NAV_SECTIONS: NavSection[] = [
 export default function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { userInfo, logout, isAuthenticated, hasRole } = useKeycloak()
+  const { userInfo, logout, hasRole } = useKeycloak()
+  const { can } = usePermissions()
   const location = useLocation()
 
   const filteredSections = NAV_SECTIONS.map((section) => {
     const items = section.items.filter((item) => {
+      if (item.permission && !can(item.permission)) return false
       if (!item.roles || item.roles.length === 0) return true
       return item.roles.some((r) => hasRole(r))
     })
@@ -241,6 +296,15 @@ function Breadcrumb({ pathname }: { pathname: string }) {
     vitals: 'Constantes vitales',
     medications: 'Prescriptions',
     'lab-orders': 'Examens de labo',
+    lis: 'Laboratoire',
+    worklist: 'Poste de travail',
+    'blood-bank': 'Banque de sang',
+    ris: 'Radiologie',
+    pharmacy: 'Pharmacie',
+    hr: 'Ressources humaines',
+    support: 'Services de support',
+    analytics: 'Pilotage et analytique',
+    'smart-queue': 'Triage et file intelligente',
   }
 
   if (segments.length === 0) return <h1 className="text-sm font-semibold text-text-primary">Vue d'ensemble</h1>

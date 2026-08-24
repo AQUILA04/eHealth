@@ -38,6 +38,11 @@
         <module>services/java/lis-service</module>
         <module>services/java/ris-service</module>
         <module>services/java/pharmacy-service</module>
+        <module>services/java/rcm-service</module>
+        <module>services/java/hr-service</module>
+        <module>services/java/support-service</module>
+        <module>services/java/patient-portal-service</module>
+        <module>services/java/analytics-service</module>
         <module>services/java/tenant-service</module>
         <module>shared/shared-tenant-lib</module>
         <!-- <module>shared/types-java</module> TODO: Fix compilation errors -->

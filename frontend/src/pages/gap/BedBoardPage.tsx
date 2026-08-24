@@ -60,7 +60,7 @@ export default function BedBoardPage() {
     if (saved) {
       try {
         setConfiguredBeds(JSON.parse(saved))
-      } catch (e) {
+      } catch {
         setConfiguredBeds(DEFAULT_BEDS)
       }
     } else {

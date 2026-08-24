@@ -94,7 +94,8 @@ export default function TenantsPage() {
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingTenant) return
-    const { id, ...data } = form
+    const { id: _id, ...data } = form
+    void _id
     updateMutation.mutate({ id: editingTenant.id, data })
   }
 

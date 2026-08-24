@@ -40,11 +40,20 @@ public class EncounterService {
 
     @Transactional
     public EncounterResponse admit(EncounterRequest request) {
-        quotaClient.assertAndRecordUsage("encounters.create");
-
         Patient patient = patientRepository.findById(request.getPatientId())
             .orElseThrow(() -> new EntityNotFoundException(
                 "Patient introuvable avec l'id: " + request.getPatientId()));
+
+        if (quotaClient != null) {
+            quotaClient.assertAndRecordUsage("encounters.create");
+        }
+
+        if (request.getEncounterType() == Encounter.EncounterType.INPATIENT
+            && request.getWard() != null && request.getRoom() != null && request.getBedNumber() != null
+            && encounterRepository.existsByWardAndRoomAndBedNumberAndStatus(
+                request.getWard(), request.getRoom(), request.getBedNumber(), EncounterStatus.IN_PROGRESS)) {
+            throw new IllegalStateException("Le lit demandé est déjà occupé");
+        }
 
         Encounter encounter = Encounter.builder()
             .patient(patient)
@@ -79,6 +88,11 @@ public class EncounterService {
     public Optional<EncounterResponse> transfer(Long encounterId, String newWard,
                                                   String newRoom, String newBed) {
         return encounterRepository.findById(encounterId).map(encounter -> {
+            if (encounterRepository.existsByWardAndRoomAndBedNumberAndStatus(
+                newWard, newRoom, newBed, EncounterStatus.IN_PROGRESS)
+                && !(newWard.equals(encounter.getWard()) && newRoom.equals(encounter.getRoom()) && newBed.equals(encounter.getBedNumber()))) {
+                throw new IllegalStateException("Le lit de destination est déjà occupé");
+            }
             String oldWard = encounter.getWard();
             encounter.setWard(newWard);
             encounter.setRoom(newRoom);
@@ -102,6 +116,19 @@ public class EncounterService {
             encounter.setBedStatus(BedStatus.CLEANING); // Déclenche le workflow de nettoyage
             log.info("GAP/ADT: Sortie — encounterId={}, disposition={}",
                 encounterId, request.getDischargeDisposition());
+            return toResponse(encounterRepository.save(encounter));
+        });
+    }
+
+    /** Valide la fin du bio-nettoyage et rend le lit de nouveau disponible. */
+    @Transactional
+    public Optional<EncounterResponse> completeBedCleaning(Long encounterId) {
+        return encounterRepository.findById(encounterId).map(encounter -> {
+            if (encounter.getStatus() != EncounterStatus.FINISHED || encounter.getBedStatus() != BedStatus.CLEANING) {
+                throw new IllegalStateException("Le lit ne peut pas être libéré avant la sortie et le nettoyage");
+            }
+            encounter.setBedStatus(BedStatus.AVAILABLE);
+            log.info("GAP/ADT: Bio-nettoyage validé — encounterId={}, lit={}", encounterId, encounter.getBedNumber());
             return toResponse(encounterRepository.save(encounter));
         });
     }

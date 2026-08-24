@@ -23,6 +23,18 @@ export default defineConfig({
         target: 'http://localhost:8083',
         changeOrigin: true,
       },
+      '/api/v1/lis': {
+        target: 'http://localhost:8084',
+        changeOrigin: true,
+      },
+      '/api/v1/ris': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+      },
+      '/api/v1/pharmacy': {
+        target: 'http://localhost:8086',
+        changeOrigin: true,
+      },
       '/api/v1/empi': {
         target: 'http://localhost:8081',
         changeOrigin: true,

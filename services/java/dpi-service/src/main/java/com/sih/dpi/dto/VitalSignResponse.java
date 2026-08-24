@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -32,5 +33,7 @@ public class VitalSignResponse {
     private LocalDateTime recordedAt;
     private String recordedBy;
     private String notes;
+    /** Alertes calculées à partir de seuils de sécurité, non persistées. */
+    private List<String> criticalAlerts;
     private LocalDateTime createdAt;
 }

@@ -51,6 +51,12 @@
         "clientRole": false
       },
       {
+        "name": "MANIPULATEUR",
+        "description": "Manipulateur en électroradiologie — planification et réalisation des examens",
+        "composite": false,
+        "clientRole": false
+      },
+      {
         "name": "PHARMACIEN",
         "description": "Pharmacien — validation des ordonnances, dispensation",
         "composite": false,
@@ -65,6 +71,72 @@
       {
         "name": "COMPTABLE",
         "description": "Comptable — facturation uniquement, pas d'accès aux diagnostics",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "CAISSIER",
+        "description": "Caissier — encaissements et émission des factures",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "FACTURATION",
+        "description": "Gestionnaire de facturation et tiers payant",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "RESPONSABLE_FINANCIER",
+        "description": "Responsable financier — supervision complète du cycle de revenus",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "RH_MANAGER",
+        "description": "Responsable RH — gestion du personnel et des accréditations",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "PLANNING_RH",
+        "description": "Gestionnaire de planning — création, publication et annulation des gardes",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "DIETETICIEN",
+        "description": "Diététique et production des repas",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "TECHNICIEN_MAINTENANCE",
+        "description": "Maintenance biomédicale et technique",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "AGENT_ENTRETIEN",
+        "description": "Bio-nettoyage et hôtellerie",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "RESPONSABLE_SUPPORT",
+        "description": "Supervision des services de support",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "COORDINATEUR_TELEMEDECINE",
+        "description": "Coordination des rendez-vous et téléconsultations",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "ANALYSTE_BI",
+        "description": "Analyse des indicateurs cliniques, financiers et opérationnels",
         "composite": false,
         "clientRole": false
       },
@@ -85,7 +157,7 @@
         "description": "Super administrateur système",
         "composite": true,
         "composites": {
-          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "ADMIN_SYSTEM"]
+          "realm": ["MEDECIN", "INFIRMIER", "BIOLOGISTE", "RADIOLOGUE", "MANIPULATEUR", "PHARMACIEN", "ADMIN_GAP", "COMPTABLE", "CAISSIER", "FACTURATION", "RESPONSABLE_FINANCIER", "RH_MANAGER", "PLANNING_RH", "DIETETICIEN", "TECHNICIEN_MAINTENANCE", "AGENT_ENTRETIEN", "RESPONSABLE_SUPPORT", "COORDINATEUR_TELEMEDECINE", "ANALYSTE_BI", "ADMIN_SYSTEM"]
         },
         "clientRole": false
       }
@@ -173,7 +245,23 @@
         "https://ehealth.optimizesolux.com"
       ],
       "defaultClientScopes": ["web-origins", "profile", "roles", "email"],
-      "optionalClientScopes": ["address", "phone", "offline_access"]
+      "optionalClientScopes": ["address", "phone", "offline_access"],
+      "protocolMappers": [
+        {
+          "name": "tenant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_id",
+            "claim.name": "tenant_id",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "false"
+          }
+        }
+      ]
     },
     {
       "clientId": "ehealth-swagger",

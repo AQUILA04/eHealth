@@ -1,0 +1,3 @@
+package com.sih.hr.entity;
+import com.sih.shared.tenant.TenantScopedEntity; import jakarta.persistence.*; import java.time.OffsetDateTime; import lombok.*;
+@Entity @Table(name="hr_shift") @Getter @Setter public class ShiftAssignment extends TenantScopedEntity { @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id; @ManyToOne(optional=false, fetch=FetchType.LAZY) @JoinColumn(name="staff_id") private StaffMember staff; @Column(nullable=false) private String unitName; @Column(nullable=false) private String shiftType; @Column(nullable=false) private OffsetDateTime startsAt; @Column(nullable=false) private OffsetDateTime endsAt; @Column(nullable=false) private String status="DRAFT"; private String notes; }

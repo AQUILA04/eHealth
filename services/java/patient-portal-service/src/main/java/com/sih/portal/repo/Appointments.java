@@ -1,0 +1,1 @@
+package com.sih.portal.repo; import com.sih.portal.entity.*; import java.util.*; import org.springframework.data.jpa.repository.*; public interface Appointments extends JpaRepository<Appointment,Long>{List<Appointment>findByTenantIdOrderByScheduledAtAsc(String t);Optional<Appointment>findByIdAndTenantId(Long i,String t);}

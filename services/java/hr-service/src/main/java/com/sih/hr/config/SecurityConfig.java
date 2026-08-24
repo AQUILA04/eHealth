@@ -1,0 +1,3 @@
+package com.sih.hr.config;
+import org.springframework.context.annotation.*; import org.springframework.security.config.annotation.web.builders.HttpSecurity; import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity; import org.springframework.security.config.annotation.web.configurers.*; import org.springframework.security.web.SecurityFilterChain;
+@Configuration @EnableWebSecurity @Profile({"mock", "unsecure", "default"}) public class SecurityConfig { @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception { return http.csrf(AbstractHttpConfigurer::disable).headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)).authorizeHttpRequests(a -> a.anyRequest().permitAll()).build(); } }

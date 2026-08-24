@@ -8,7 +8,7 @@ import {
 import { gapAppointmentService, gapPatientService } from '@/services/gap.service'
 import { format, startOfDay, endOfDay, addDays, subDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import type { Appointment, AppointmentStatus } from '@/types'
+import type { Appointment } from '@/types'
 
 const STATUS_LABELS: Record<string, string> = {
   SCHEDULED: 'Planifié', CONFIRMED: 'Confirmé', CHECKED_IN: 'Arrivé',
@@ -122,7 +122,7 @@ export default function AppointmentsPage() {
           { label: 'Arrivés', value: counts.checkedIn, color: 'bg-clinical-info-bg text-clinical-info' },
           { label: 'Terminés', value: counts.completed, color: 'bg-slate-100 text-slate-600' },
         ].map(({ label, value, color }) => (
-          <Card key={label} className="p-4">
+          <Card key={label} className={`p-4 ${color}`}>
             <p className="text-2xl font-bold text-text-primary">{value}</p>
             <p className="text-xs text-text-muted mt-0.5">{label}</p>
           </Card>

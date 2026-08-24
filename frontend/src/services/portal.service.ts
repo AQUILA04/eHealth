@@ -1,0 +1,3 @@
+import apiClient from '@/lib/axios'
+import type { PortalAppointment, Teleconsultation } from '@/types'
+export const portalService={ appointments:()=>apiClient.get<PortalAppointment[]>('/portal/appointments').then(r=>r.data), confirm:(id:number)=>apiClient.post<PortalAppointment>(`/portal/appointments/${id}/confirm`).then(r=>r.data), teleconsultations:()=>apiClient.get<Teleconsultation[]>('/portal/teleconsultations').then(r=>r.data), start:(id:number)=>apiClient.post<Teleconsultation>(`/portal/teleconsultations/${id}/start`).then(r=>r.data), complete:(id:number)=>apiClient.post<Teleconsultation>(`/portal/teleconsultations/${id}/complete`).then(r=>r.data) }

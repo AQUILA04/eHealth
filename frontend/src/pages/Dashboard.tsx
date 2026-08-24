@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Users, BedDouble, CalendarDays, Activity, AlertTriangle, Clock } from 'lucide-react'
+import { BedDouble, CalendarDays, AlertTriangle, Clock } from 'lucide-react'
 import { StatCard, Card, CardHeader, CardBody, Badge, Spinner, Table, Thead, Th, Tr, Td } from '@/components/ui'
 import { gapEncounterService, gapAppointmentService } from '@/services/gap.service'
 import { format, startOfDay, endOfDay } from 'date-fns'

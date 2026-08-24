@@ -29,6 +29,9 @@ public interface EncounterRepository extends JpaRepository<Encounter, Long> {
     /** Encounters par service (ward). */
     List<Encounter> findByWardAndStatus(String ward, EncounterStatus status);
 
+    /** Indique si un lit est déjà occupé par un séjour actif. */
+    boolean existsByWardAndRoomAndBedNumberAndStatus(String ward, String room, String bedNumber, EncounterStatus status);
+
     /** Encounters par type. */
     List<Encounter> findByEncounterType(EncounterType type);
 }

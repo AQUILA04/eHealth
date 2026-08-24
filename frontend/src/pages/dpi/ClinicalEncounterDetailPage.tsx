@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  Activity, Pill, FlaskConical, FileText, Plus, ChevronLeft,
+  Activity, Pill, FlaskConical, Plus, ChevronLeft,
   Thermometer, Heart, Wind, Droplets
 } from 'lucide-react'
 import {
@@ -10,6 +10,7 @@ import {
   Spinner, Table, Thead, Th, Tr, Td, Modal, cn
 } from '@/components/ui'
 import { dpiEncounterService, dpiVitalSignService, dpiMedicationService, dpiLabOrderService } from '@/services/dpi.service'
+import { Can, PERMISSIONS } from '@/auth/permissions'
 import { format } from 'date-fns'
 import type { VitalSign, MedicationOrder, LabOrder, MedicationRoute, MedicationFrequency } from '@/types'
 
@@ -165,9 +166,9 @@ export default function ClinicalEncounterDetailPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-text-primary">Constantes vitales</h2>
-                <Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setShowVitalModal(true)}>
+                <Can permission={PERMISSIONS.DPI_VITAL_RECORD}><Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setShowVitalModal(true)}>
                   Saisir
-                </Button>
+                </Button></Can>
               </div>
             </CardHeader>
             <CardBody className="p-0">
@@ -244,9 +245,9 @@ export default function ClinicalEncounterDetailPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-text-primary">Prescriptions (CPOE)</h2>
-                <Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setShowMedModal(true)}>
+                <Can permission={PERMISSIONS.DPI_MEDICATION_PRESCRIBE}><Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setShowMedModal(true)}>
                   Prescrire
-                </Button>
+                </Button></Can>
               </div>
             </CardHeader>
             <CardBody className="p-0">
@@ -308,9 +309,9 @@ export default function ClinicalEncounterDetailPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-text-primary">Examens de laboratoire</h2>
-                <Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setShowLabModal(true)}>
+                <Can permission={PERMISSIONS.DPI_LAB_ORDER_CREATE}><Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setShowLabModal(true)}>
                   Demander
-                </Button>
+                </Button></Can>
               </div>
             </CardHeader>
             <CardBody className="p-0">
@@ -377,13 +378,13 @@ export default function ClinicalEncounterDetailPage() {
                         </Td>
                         <Td>
                           {lab.status !== 'COMPLETED' && lab.status !== 'CANCELLED' && (
-                            <Button
+                            <Can permission={PERMISSIONS.DPI_LAB_RESULT_ENTER}><Button
                               size="sm"
                               variant="secondary"
                               onClick={() => { setShowResultModal(lab); setResultForm({ result: '', resultUnit: '', referenceRange: '', interpretation: 'NORMAL' }) }}
                             >
                               Saisir résultat
-                            </Button>
+                            </Button></Can>
                           )}
                         </Td>
                       </Tr>
