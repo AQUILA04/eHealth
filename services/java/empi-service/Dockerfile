@@ -23,6 +23,11 @@ COPY services/java/terminology-service/pom.xml ./services/java/terminology-servi
 COPY services/java/lis-service/pom.xml ./services/java/lis-service/pom.xml
 COPY services/java/ris-service/pom.xml ./services/java/ris-service/pom.xml
 COPY services/java/pharmacy-service/pom.xml ./services/java/pharmacy-service/pom.xml
+COPY services/java/rcm-service/pom.xml ./services/java/rcm-service/pom.xml
+COPY services/java/hr-service/pom.xml ./services/java/hr-service/pom.xml
+COPY services/java/support-service/pom.xml ./services/java/support-service/pom.xml
+COPY services/java/patient-portal-service/pom.xml ./services/java/patient-portal-service/pom.xml
+COPY services/java/analytics-service/pom.xml ./services/java/analytics-service/pom.xml
 COPY services/java/tenant-service/pom.xml ./services/java/tenant-service/pom.xml
 
 # Pré-télécharger les dépendances (layer cacheable)
