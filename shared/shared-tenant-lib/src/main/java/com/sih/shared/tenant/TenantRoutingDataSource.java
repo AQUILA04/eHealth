@@ -24,9 +24,9 @@ public class TenantRoutingDataSource extends DelegatingDataSource {
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
-        Connection connection = super.getConnection(username, password);
-        setupTenantContext(connection);
-        return connection;
+        // Ignore caller credentials (e.g. Hibernate H2 defaults sa/"") so the
+        // pooled PostgreSQL user/password from Spring are always used.
+        return getConnection();
     }
 
     private void setupTenantContext(Connection connection) {

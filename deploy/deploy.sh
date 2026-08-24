@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+set +H
 
 # Usage:
 #   deploy.sh [--force-update | -fu] <env> [frontend] [empi] [gap] [dpi] [tenant]
@@ -39,6 +40,8 @@ PROJECT_NAME="ehealth-$ENV"
 mkdir -p "$RELEASES_DIR"
 
 env_quote() {
+  # Docker Compose .env + bash `source`: double-quote special chars (incl. !).
+  # Single quotes were kept as part of the value by some Compose parsers.
   local val="$1"
   if [[ "$val" == *[$'\n\r']* ]]; then
     echo "Error: newline in env value for key" >&2
@@ -47,7 +50,11 @@ env_quote() {
   if [[ "$val" =~ ^[A-Za-z0-9._:/+-]+$ ]]; then
     printf '%s' "$val"
   else
-    printf "'%s'" "${val//\'/\'\\\'\'}"
+    local escaped="${val//\\/\\\\}"
+    escaped="${escaped//\"/\\\"}"
+    escaped="${escaped//\$/\\$}"
+    escaped="${escaped//\`/\\\`}"
+    printf '"%s"' "$escaped"
   fi
 }
 
