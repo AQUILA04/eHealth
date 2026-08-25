@@ -2,6 +2,7 @@ name: Deploy eHealth Landing Page
 
 # Builds & deploys landing-page/ to the Contabo VPS (shared Traefik).
 # Triggers only when files under landing-page/ change (or this workflow file).
+# Reuses the same GitHub secrets as .github/workflows/cd.yml.
 
 on:
   push:
@@ -19,6 +20,7 @@ jobs:
   build-and-deploy:
     name: Build & deploy landing-page
     runs-on: ubuntu-latest
+    environment: prod
     defaults:
       run:
         working-directory: landing-page
@@ -29,13 +31,13 @@ jobs:
 
       - name: Validate required secrets
         env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
+          PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+          PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           missing=0
-          for name in VPS_HOST VPS_USER SSH_PRIVATE_KEY; do
+          for name in PROD_SERVER_HOST PROD_SERVER_USER SSH_PRIVATE_KEY; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing GitHub secret: $name"
               missing=1
@@ -46,23 +48,22 @@ jobs:
       - name: Setup SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
+          SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
 
       - name: Sync landing-page to VPS
         env:
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_LANDING_PATH: ${{ secrets.VPS_LANDING_PATH }}
+          SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+          SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
         run: |
           set -euo pipefail
-          REMOTE="${VPS_USER}@${VPS_HOST}"
-          DEST="${VPS_LANDING_PATH:-/opt/optimizesolux/ehealth-landing}"
+          REMOTE="${SERVER_USER}@${SERVER_HOST}"
+          DEST="/opt/optimizesolux/ehealth-landing"
 
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes "$REMOTE" \
             "mkdir -p '$DEST' && (docker network inspect traefik-public >/dev/null 2>&1 || docker network create traefik-public)"
@@ -77,17 +78,15 @@ jobs:
 
       - name: Build & restart container on VPS
         env:
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_LANDING_PATH: ${{ secrets.VPS_LANDING_PATH }}
-          LANDING_HOST: ${{ secrets.LANDING_HOST }}
-          COMPOSE_PROJECT_NAME: ${{ secrets.LANDING_COMPOSE_PROJECT }}
+          SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+          SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+          PROD_APP_HOSTNAME: ${{ secrets.PROD_APP_HOSTNAME }}
         run: |
           set -euo pipefail
-          REMOTE="${VPS_USER}@${VPS_HOST}"
-          DEST="${VPS_LANDING_PATH:-/opt/optimizesolux/ehealth-landing}"
-          HOST_NAME="${LANDING_HOST:-ehealth.optimizesolux.com}"
-          PROJECT="${COMPOSE_PROJECT_NAME:-ehealth-landing}"
+          REMOTE="${SERVER_USER}@${SERVER_HOST}"
+          DEST="/opt/optimizesolux/ehealth-landing"
+          HOST_NAME="${PROD_APP_HOSTNAME:-ehealth.optimizesolux.com}"
+          PROJECT="ehealth-landing"
 
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes "$REMOTE" bash -s <<EOF
           set -euo pipefail
@@ -101,10 +100,10 @@ jobs:
       - name: Smoke check
         continue-on-error: true
         env:
-          LANDING_HOST: ${{ secrets.LANDING_HOST }}
+          PROD_APP_HOSTNAME: ${{ secrets.PROD_APP_HOSTNAME }}
         run: |
           set -euo pipefail
-          HOST_NAME="${LANDING_HOST:-ehealth.optimizesolux.com}"
+          HOST_NAME="${PROD_APP_HOSTNAME:-ehealth.optimizesolux.com}"
           echo "Checking https://${HOST_NAME}/ …"
           curl -fsSIL --max-time 30 "https://${HOST_NAME}/" | head -n 20 || \
             echo "::warning::Smoke check failed (DNS/TLS may still be propagating)."
