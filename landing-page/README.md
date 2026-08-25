@@ -22,13 +22,13 @@ npx --yes serve .
 Production frontend is already routed on `ehealth.optimizesolux.com` (`deploy/docker-compose.prod.yml`).  
 Do **not** deploy this static stack on the same Host label once the React landing is live — prefer the in-app landing (CleanTrack pattern).
 
-If you still need a static mirror, set `LANDING_HOST` to a distinct host (e.g. marketing-only) via GitHub secrets.
+If you still need a static mirror, deploy it on a distinct host — do not reuse `PROD_APP_HOSTNAME` once the React app is live.
 
 ### GitHub Actions
 
 Workflow : [`.github/workflows/deploy-landing-page.yml`](../.github/workflows/deploy-landing-page.yml)
 
-Secrets : `VPS_HOST`, `VPS_USER`, `SSH_PRIVATE_KEY` (+ optional `VPS_LANDING_PATH`, `LANDING_HOST`, `LANDING_COMPOSE_PROJECT`).
+Same secrets as CD (`environment: prod`) : `PROD_SERVER_HOST`, `PROD_SERVER_USER`, `SSH_PRIVATE_KEY`, `PROD_APP_HOSTNAME`. See [deploy/GITHUB-SECRETS-CONTABO.md](../deploy/GITHUB-SECRETS-CONTABO.md).
 
 ## Auth CTAs
 

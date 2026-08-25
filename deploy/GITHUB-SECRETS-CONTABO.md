@@ -44,6 +44,7 @@ Créer aussi l’**environment** GitHub Actions nommé `prod` (approvals optionn
 |----------|---------|
 | **CI** | push / PR sur `main` et `release/**` → tests + push images GHCR |
 | **CD** | CI success sur `release/**` **ou** `workflow_dispatch` (promote) → SSH Contabo |
+| **Landing** | push `landing-page/**` sur `main` **ou** `workflow_dispatch` → SSH Contabo (mêmes secrets : `PROD_SERVER_HOST`, `PROD_SERVER_USER`, `SSH_PRIVATE_KEY`, `PROD_APP_HOSTNAME`) |
 
 Promote : déploie les dernières images publiées depuis l’historique `main`.
 
